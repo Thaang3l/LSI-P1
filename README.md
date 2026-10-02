@@ -177,9 +177,11 @@ Se propuso cambiar los servidores a archive.debian.org conservando Buster para p
 
 ## 6. Apartado b: versión inicial y actualización
 
-**Pendiente.** Hay indicios de Debian 10 Buster, pero falta registrar la versión exacta instalada.
+**Versión inicial confirmada el 2 de octubre de 2026:** Debian GNU/Linux 10.4 (Buster), arquitectura amd64 (x86 de 64 bits). La actualización sigue pendiente.
 
-Próximos comandos acordados, todavía sin salida:
+En `/`, dispositivo `/dev/sda1`: 13 GB totales, 3,8 GB usados, 7,9 GB disponibles y 33 % de uso. El espacio necesario se comprobará también con la propuesta de APT antes de instalar.
+
+Comandos ejecutados y resultados facilitados por el alumno:
 
 ```bash
 cat /etc/os-release
@@ -212,8 +214,10 @@ Los comandos Linux son para la VM; este repositorio contiene apuntes. Como root 
 
 El enunciado indica no añadir comentarios a los archivos de configuración salvo los originales. Las explicaciones se conservan aquí.
 
-Pendientes inmediatos: validar DNS, obtener versión y espacio, preparar el primer salto de Debian, completar sudo y confirmar ens34.
+Pendientes inmediatos: validar DNS, preparar el primer salto de Debian, completar sudo y confirmar ens34.
 
 ## Historial
 
 - 2026-09-25: recopilación inicial de la sesión; red comprobada, archivos básicos revisados y actualización pendiente.
+
+- 2026-10-02: confirmados Debian 10.4, amd64 y 7,9 GB disponibles en `/`. Siguiente comprobación propuesta: resolución de archive.debian.org y estado actual de sources.list; todavía sin resultado.
