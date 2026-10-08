@@ -1,8 +1,10 @@
 # LSI · UDC · 2026
 
-Cuaderno de estudio de la práctica 1. Actualizado hasta el 7 de octubre de 2026, a petición del alumno. Distingue resultados comprobados, recomendaciones y tareas pendientes.
+Cuaderno de estudio de la práctica 1. Actualizado hasta el 9 de octubre de 2026, a petición del alumno. Distingue resultados comprobados, recomendaciones y tareas pendientes.
 
 ## Estado
+
+**El estado vigente está resumido en la sección 8.** Las secciones anteriores conservan el contexto de instalación y actualización; sus inventarios iniciales no describen los servicios actuales. Esta actualización añade solo cambios que permanecen aplicados según las salidas de la VM, sin incorporar pruebas retiradas.
 
 | Parte | Estado |
 | --- | --- |
@@ -14,8 +16,9 @@ Cuaderno de estudio de la práctica 1. Actualizado hasta el 7 de octubre de 2026
 | a) sudo | Pendiente de configurar y verificar con el usuario normal |
 | b) Actualización | Debian 13.7 y kernel 6.12.111+deb13-amd64 verificados |
 | c) Arranque y unidades | Explicados e inventarios interpretados; ssa pendiente |
-| d) Tiempos de arranque | Medidos e interpretados: 46,272 s |
-| e) Errores del journal | Pendiente de obtener la salida |
+| d) Tiempos de arranque | Última medida: 16,421 s; objetivo de 10–12 s todavía no alcanzado |
+| e) Errores del journal | Corregida configuración residual de CUPS; logrotate termina correctamente |
+| h) Limpieza | Escritorio retirado y ajustes vigentes documentados en sección 8; investigación en pausa de cambios |
 
 ## 1. /etc/network/interfaces
 
@@ -78,7 +81,7 @@ default via 10.11.48.1 dev ens33 onlink
 - ens33: 10.11.49.56/23; ens34: 10.11.51.56/23.
 - Ping al router: cuatro respuestas, 0 % de pérdida.
 - UNKNOWN no impidió la comunicación en ens33.
-- La ruta 169.254.0.0/16 se observó, pero no se investigó ni modificó.
+- La ruta 169.254.0.0/16 pertenecía al estado inicial. Posteriormente se identificó su origen en el script avahi-autoipd y dejó de aparecer tras retirar ese script; véase sección 8.
 - Pendiente: conectividad y asignación de ens34.
 
 ## 2. /etc/hosts
@@ -378,7 +381,7 @@ Resultado: graphical.target predeterminado, 52 unidades listadas en la primera c
 
 multi-user.target y graphical.target estaban ambos activos; graphical incorpora multi-user y solicita el inicio gráfico. Alcanzarlo no demuestra que el escritorio funcione. También estaban activos sysinit, basic, local-fs, getty, network y network-online. network-online no garantiza acceso a Internet. Rescue, shutdown o suspend inactivos son normales cuando no se utilizan.
 
-Comandos explicados, **no ejecutados para cambiar el arranque**:
+Comandos explicados inicialmente; posteriormente se aplicó `set-default multi-user.target` (sección 8):
 
 ~~~bash
 systemctl set-default multi-user.target
@@ -534,21 +537,126 @@ graphical.target @39.696s
                                 └─dev-sda5.device @6.958s
 ~~~
 
-@ indica el instante de inicio/activación desde userspace; +, duración de activación. AppArmor comenzó a 7,131 s y terminó aproximadamente a 32,805 s, justo antes de sysinit.target a 32,813 s. Es el tramo más largo mostrado en esta cadena. No se puede prometer que desactivarlo ahorre exactamente 25,674 s; hay trabajo paralelo. **No se desactivó AppArmor ni se cambió configuración para reducir tiempos.**
+@ indica el instante de inicio/activación desde userspace; +, duración de activación. AppArmor comenzó a 7,131 s y terminó aproximadamente a 32,805 s, justo antes de sysinit.target a 32,813 s. Es el tramo más largo mostrado en esta cadena. No se puede prometer que desactivarlo ahorre exactamente 25,674 s; hay trabajo paralelo. **En aquella medición inicial todavía no se había cambiado la configuración. El estado posterior se documenta en la sección 8.**
 
-## 8. Punto de continuación y pendientes
+## 8. Configuración vigente después de la limpieza — 9 de octubre de 2026
 
-- Apartados b, c y d trabajados; actualización y arranque en Debian 13.7 verificados.
-- Apartado a: queda configurar/verificar sudo con el usuario normal y confirmar asignación/conectividad de ens34. Se revisaron los archivos básicos.
-- ssa.service y display-manager.target: incidencias pendientes, sin reparación aplicada.
-- Revisar posibles aplicaciones retiradas durante el salto con main ausente; no ejecutar autoremove a ciegas.
-- **Siguiente paso, apartado e:** obtener errores del arranque y analizarlos con IA. Todavía no se ha recibido esa salida:
+Este apartado describe lo que permanece aplicado según las últimas salidas compartidas. No es un script para copiar entero ni una recomendación general para cualquier Debian. La máquina es del laboratorio, se administra por SSH y dispone de consola; no hay acceso a cambios de hardware del hipervisor. No se han modificado CPU, RAM, disco ni modelo de tarjetas virtuales.
 
-~~~bash
-journalctl -p 3 -b --no-pager
-~~~
+### 8.1 Sistema y resultado medido
 
--p 3 incluye prioridad error y más graves; -b selecciona el arranque actual. No se han inventado errores ni soluciones del apartado e.
+- Debian 13.7, kernel `6.12.111+deb13-amd64`, arquitectura amd64.
+- VMware, una CPU virtual y aproximadamente 1,4 GiB de RAM visible.
+- Arranque por `multi-user.target`, sin escritorio. Se aplicó `systemctl set-default multi-user.target`.
+- Red estática conservada: ens33 `10.11.49.56/23`, ens34 `10.11.51.56/23`, gateway `10.11.48.1` por ens33. DNS funciona en las comprobaciones con `getent`.
+- Última medida: **6,389 s de kernel/preparación inicial + 10,031 s de userspace = 16,421 s**. `multi-user.target` se alcanzó a los 10,030 s de userspace. No equivale al tiempo completo desde pulsar encendido ni demuestra por sí solo el instante de acceso SSH desde otro equipo.
+- Última comprobación: cero unidades fallidas, swap de 1,5 GiB activa y sin uso.
+- Último espacio comprobado: raíz de 13 GB, 3,1 GB usados, 8,6 GB disponibles (27 %).
+
+Las mediciones varían entre reinicios. No se atribuye una cantidad fija de segundos a cada cambio: las tareas se solapan y `blame` mide activación, no consumo continuo de CPU. El objetivo de 10–12 segundos totales **no está alcanzado**.
+
+### 8.2 Paquetes retirados
+
+Se ejecutó `python3 limpieza-lsi.py paquetes`, que purgó la selección revisada de aplicaciones y configuraciones de escritorio. Entre ellas: GNOME Shell y sesión, GDM, terminal y utilidades gráficas, juegos, Firefox ESR, Nautilus, aplicaciones multimedia, Transmission gráfico y configuraciones residuales de LibreOffice. Algunas entradas purgadas ya no tenían los binarios instalados: purgar también elimina configuración residual.
+
+Después el alumno ejecutó `apt autoremove`. El historial confirmó la retirada de numerosas dependencias gráficas y bibliotecas antiguas, además de `network-manager`, `wpasupplicant`, `fwupd`, `power-profiles-daemon`, `accountsservice`, `libnss-myhostname`, `unzip`, `7zip` y `jq`, entre otros. No se encontraron SSH, ifupdown, el kernel ni open-vm-tools entre los paquetes eliminados por esa transacción. Se comprobó `dpkg --audit` sin incidencias y se volvió a acceder por SSH después del reinicio.
+
+La ausencia de `libnss-myhostname` significa que ya no se dispone de ese módulo para resolver el nombre propio; no se ha documentado una edición posterior de nsswitch.conf. Los comandos de DNS externos sí respondieron. Las utilidades retiradas se pueden reinstalar cuando la práctica las necesite. No ejecutar de nuevo la limpieza para reproducir estos apuntes sin revisar antes el estado de cada máquina.
+
+Se instaló `strace` (y su dependencia `libunwind8`); no se ha comunicado su desinstalación. Es una herramienta disponible, no un servicio de arranque.
+
+### 8.3 Servicios bloqueados
+
+Se aplicaron máscaras para impedir la activación de:
+
+```text
+NetworkManager.service
+NetworkManager-wait-online.service
+avahi-daemon.service
+avahi-daemon.socket
+ModemManager.service
+wpa_supplicant.service
+exim4.service
+e2scrub_reap.service
+apparmor.service
+```
+
+NetworkManager y wpasupplicant fueron además retirados por autoremove. Las interfaces las configura **ifupdown mediante networking.service**, que se conserva, al igual que SSH. La máscara de Exim impide arrancar su servicio habitual, pero no equivale a desinstalar todo el correo ni a demostrar que todos sus temporizadores estén bloqueados. `e2scrub_reap` se bloqueó en una máquina sin LVM; no se debe inferir que se hayan desactivado las comprobaciones de ext4 o todos los temporizadores de e2scrub.
+
+La última consulta explícita de AppArmor devuelve `masked`. Se omite la carga de perfiles por ese servicio; el módulo del kernel puede continuar cargado. **Es una reducción de protección**, no una mejora de rendimiento cuantificada. El mensaje observado de aa-status no permite afirmar el número final de perfiles cargados. No se eliminaron los archivos de perfiles.
+
+`systemd-journal-flush.service` **todavía no se ha bloqueado**: aparece en el último `blame`. La propuesta posterior de bloquearlo no cuenta como cambio aplicado.
+
+### 8.4 Preparación de las interfaces
+
+Archivo añadido: `/etc/systemd/system/ifupdown-pre.service.d/90-lsi-red.conf`:
+
+```ini
+[Service]
+ExecStart=
+ExecStart=/bin/sh -c '/bin/udevadm wait --timeout=30 /sys/class/net/ens33 /sys/class/net/ens34 || /bin/udevadm settle --timeout=120'
+```
+
+Reemplaza la espera global inicial por una espera a que ambas interfaces estén inicializadas. Si falla, utiliza la espera general como respaldo. Se conserva la unidad original y su orden respecto a udev. Es específico de esos dos nombres de interfaz: debe revisarse si cambian. La activación observada de ifupdown-pre bajó a unos 0,08–0,10 segundos; no se traduce en restar automáticamente cuatro segundos al total.
+
+Se apartaron los siguientes scripts, conservándolos en directorios de respaldo con fecha bajo `/root/lsi-hooks-red-*` y `/root/lsi-hooks-extra-*`:
+
+| Directorio original | Scripts apartados |
+| --- | --- |
+| `/etc/network/if-pre-up.d/` | `wireless-tools`, `wpasupplicant`, `ethtool` |
+| `/etc/network/if-up.d/` | `wpasupplicant`, `avahi-autoipd`, `ethtool`, `resolved` |
+
+No se usan opciones Wi-Fi/WPA ni ajustes ethtool personalizados en interfaces; resolv.conf es un archivo regular con DNS configurados manualmente. Se confirmó que el script resolved consultaba un servicio no habilitado y que los scripts ethtool no ejecutaban la herramienta para estas interfaces. La ruta adicional `169.254.0.0/16`, creada por avahi-autoipd, dejó de aparecer. Se conservaron las dos redes estáticas y la ruta por defecto.
+
+Esto afecta a la integración automática futura con esas herramientas: si cambia la forma de configurar la red habrá que revisar los scripts. No se ha demostrado un ahorro global significativo atribuible a retirarlos.
+
+### 8.5 Regla de disco y módulos
+
+Se creó el enlace `/etc/udev/rules.d/85-hdparm.rules` a `/dev/null`, desactivando la regla homónima del sistema. Su ejecución sobre el disco SATA virtual aplicaba APM 254; la traza previa mostró alrededor de un segundo de duración. No se cambiaron los controladores del disco, las particiones ni la caché de escritura. No se garantiza que ese segundo se ahorre entero en el arranque.
+
+Archivo añadido `/etc/modprobe.d/90-lsi-vm.conf`:
+
+```text
+blacklist intel_uncore
+blacklist intel_cstate
+blacklist sb_edac
+```
+
+Esos módulos de monitorización del hardware físico fallaban al cargarse en esta VM. Se bloqueó su carga automática por alias; no se desactivaron las mitigaciones de seguridad de CPU ni los módulos de cifrado. No se documentó una reconstrucción del initramfs para este ajuste.
+
+### 8.6 Journal en memoria
+
+Archivo añadido `/etc/systemd/journald.conf.d/90-lsi-volatil.conf`:
+
+```ini
+[Journal]
+Storage=volatile
+RuntimeMaxUse=32M
+```
+
+El journal nuevo se mantiene en `/run/log/journal` y no sobrevive al reinicio. Los registros persistentes anteriores no se borraron. `rsyslog` sigue presente y sus archivos se gestionan por separado: este cambio no significa que se hayan desactivado todos los registros del sistema ni que se conserve una copia equivalente de cada mensaje.
+
+La última comprobación de los archivos existentes con `journalctl --verify` dio PASS. No se borraron por supuesta corrupción. Este modo debe tenerse en cuenta en los apartados de logs de la práctica: la consulta de arranques anteriores no conservará los nuevos journals volátiles.
+
+### 8.7 Corrección de logrotate
+
+Se identificó una configuración residual de CUPS en `/etc/logrotate.d/cups*` que intentaba reiniciar `cups` aunque su servicio ya no estaba instalado. Los paquetes CUPS relevantes figuraban como `rc` (retirados con configuración residual).
+
+Se apartó esa configuración en `/root/respaldo-logrotate/`. Logrotate volvió a finalizar con `status=0/SUCCESS`. Su estado `inactive (dead)` después de terminar es normal para esta tarea periódica. El archivo `/var/lib/logrotate/status` se observó con permisos `640`, propietario root:root; no se atribuye a un comando concreto que no quedó registrado.
+
+### 8.8 Componentes conservados y punto de espera
+
+Se mantienen el sistema base, kernel, GRUB, udev, D-Bus, SSH, ifupdown, swap, journald, rsyslog, sincronización horaria y herramientas VMware. `ssa.service` no se modificó: su función exacta sigue pendiente de aclarar y terminó correctamente en las salidas revisadas.
+
+La swap conserva la entrada normal de `/etc/fstab`:
+
+```text
+/dev/sda5 none swap sw 0 0
+```
+
+En el último arranque la cadena que terminó en SSH pasó por dispositivos/swap, sistemas de archivos y networking. La configuración de red tardó 3,399 s; no se deben sumar las duraciones de todas las unidades del listado blame.
+
+**Punto de espera solicitado:** no aplicar más cambios, máscaras, purgas o reinicios de diagnóstico hasta estudiar el inventario actual. Se investigarán preparación inicial/initramfs, reglas udev, carga estática de módulos, dependencias y activadores de servicios, configuración de red y contención durante el arranque. Ninguna hipótesis adicional se considera aplicada o demostrada. Se mantienen pendientes la verificación de sudo y los apartados posteriores de la práctica.
 
 ## 9. Uso del repositorio y fuentes
 
@@ -569,3 +677,5 @@ Fuentes consultadas durante la sesión:
 - 2026-09-25: recopilación inicial de red y archivos básicos.
 - 2026-10-02: registrada la versión inicial 10.4, amd64 y espacio disponible.
 - 2026-10-07: actualización solicitada expresamente: DNS resuelto, saltos hasta 13.7, incidencias y soluciones, apartados c y d, y pendientes para continuar en e. Las fechas del historial corresponden a la documentación, no a una fecha exacta demostrada para cada comando de la VM.
+
+- 2026-10-09: actualización solicitada: configuración vigente de la limpieza, servicios, red, journal, logrotate y último arranque; solo se añaden cambios mantenidos, sin incorporar pruebas revertidas.
