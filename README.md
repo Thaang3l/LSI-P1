@@ -9,9 +9,9 @@ Cuaderno de estudio de la práctica 1. Actualizado hasta el 9 de octubre de 2026
 | Parte | Estado |
 | --- | --- |
 | a) Interfaces | Aplicadas; conexión al router comprobada |
-| a) hosts | Cambio comunicado; comprobación IPv4 indicada como correcta |
+| a) hosts | Archivo confirmado: 10.11.49.56 debian |
 | a) resolv.conf | Resolución reparada y verificada; DNS originales primero |
-| a) nsswitch.conf | Revisado, sin cambios |
+| a) nsswitch.conf | Estado actual: files mdns4_minimal [NOTFOUND=return] dns |
 | a) sources.list | Adaptado en cada salto; errores documentados |
 | a) sudo | Pendiente de configurar y verificar con el usuario normal |
 | b) Actualización | Debian 13.7 y kernel 6.12.111+deb13-amd64 verificados |
@@ -561,7 +561,7 @@ Se ejecutó `python3 limpieza-lsi.py paquetes`, que purgó la selección revisad
 
 Después el alumno ejecutó `apt autoremove`. El historial confirmó la retirada de numerosas dependencias gráficas y bibliotecas antiguas, además de `network-manager`, `wpasupplicant`, `fwupd`, `power-profiles-daemon`, `accountsservice`, `libnss-myhostname`, `unzip`, `7zip` y `jq`, entre otros. No se encontraron SSH, ifupdown, el kernel ni open-vm-tools entre los paquetes eliminados por esa transacción. Se comprobó `dpkg --audit` sin incidencias y se volvió a acceder por SSH después del reinicio.
 
-La ausencia de `libnss-myhostname` significa que ya no se dispone de ese módulo para resolver el nombre propio; no se ha documentado una edición posterior de nsswitch.conf. Los comandos de DNS externos sí respondieron. Las utilidades retiradas se pueden reinstalar cuando la práctica las necesite. No ejecutar de nuevo la limpieza para reproducir estos apuntes sin revisar antes el estado de cada máquina.
+La ausencia de `libnss-myhostname` significa que ya no se dispone de ese módulo para resolver el nombre propio. El inventario del 9 de octubre confirma que la línea hosts de nsswitch.conf ya no incluye myhostname: `hosts: files mdns4_minimal [NOTFOUND=return] dns`. No se atribuye su retirada a un comando concreto. Los comandos de DNS externos sí respondieron. Las utilidades retiradas se pueden reinstalar cuando la práctica las necesite. No ejecutar de nuevo la limpieza para reproducir estos apuntes sin revisar antes el estado de cada máquina.
 
 Se instaló `strace` (y su dependencia `libunwind8`); no se ha comunicado su desinstalación. Es una herramienta disponible, no un servicio de arranque.
 
@@ -624,19 +624,13 @@ blacklist sb_edac
 
 Esos módulos de monitorización del hardware físico fallaban al cargarse en esta VM. Se bloqueó su carga automática por alias; no se desactivaron las mitigaciones de seguridad de CPU ni los módulos de cifrado. No se documentó una reconstrucción del initramfs para este ajuste.
 
-### 8.6 Journal en memoria
+### 8.6 Journal: estado persistente confirmado
 
-Archivo añadido `/etc/systemd/journald.conf.d/90-lsi-volatil.conf`:
+**Corrección tras recibir el inventario completo del 9 de octubre:** el modo en RAM se había indicado, pero no aparece aplicado en la configuración recogida. No se debe contabilizar como un cambio vigente.
 
-```ini
-[Journal]
-Storage=volatile
-RuntimeMaxUse=32M
-```
+`systemd-analyze cat-config systemd/journald.conf` no muestra el archivo propuesto `90-lsi-volatil.conf` ni una opción activa `Storage=volatile`. Los registros del mismo arranque muestran explícitamente el volcado a `/var/log/journal`, 1,250966 segundos para 1321 entradas y un journal persistente de 84,1 MB. El servicio journal-flush tardó 1,746 segundos en total. La medida de 16,421 segundos corresponde a ese arranque con almacenamiento persistente; no demuestra una mejora por pasar el journal a RAM.
 
-El journal nuevo se mantiene en `/run/log/journal` y no sobrevive al reinicio. Los registros persistentes anteriores no se borraron. `rsyslog` sigue presente y sus archivos se gestionan por separado: este cambio no significa que se hayan desactivado todos los registros del sistema ni que se conserve una copia equivalente de cada mensaje.
-
-La última comprobación de los archivos existentes con `journalctl --verify` dio PASS. No se borraron por supuesta corrupción. Este modo debe tenerse en cuenta en los apartados de logs de la práctica: la consulta de arranques anteriores no conservará los nuevos journals volátiles.
+La configuración de proveedor `/usr/lib/systemd/journald.conf.d/syslog.conf` contiene `ForwardToSyslog=yes`; rsyslog sigue presente. Los archivos existentes pasaron `journalctl --verify`. No se eliminaron registros por supuesta corrupción. Antes de cualquier cambio adicional debe comprobarse qué ocurrió con el archivo propuesto; no se ha corregido ni recreado automáticamente en la VM.
 
 ### 8.7 Corrección de logrotate
 
@@ -646,7 +640,7 @@ Se apartó esa configuración en `/root/respaldo-logrotate/`. Logrotate volvió 
 
 ### 8.8 Componentes conservados y punto de espera
 
-Se mantienen el sistema base, kernel, GRUB, udev, D-Bus, SSH, ifupdown, swap, journald, rsyslog, sincronización horaria y herramientas VMware. `ssa.service` no se modificó: su función exacta sigue pendiente de aclarar y terminó correctamente en las salidas revisadas.
+Se mantienen el sistema base, kernel, GRUB, udev, D-Bus, SSH, ifupdown, swap, journald, rsyslog, sincronización horaria y herramientas VMware. El inventario confirma además máscaras en console-setup.service, keyboard-setup.service, tpm2-abrmd.service y run-vmblock\x2dfuse.mount; no consta en esta documentación el comando que las creó. No se atribuyen todas las máscaras del sistema a la limpieza, porque algunas vienen de los paquetes. `ssa.service` no se modificó: su función exacta sigue pendiente de aclarar y terminó correctamente en las salidas revisadas.
 
 La swap conserva la entrada normal de `/etc/fstab`:
 
