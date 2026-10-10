@@ -54,6 +54,40 @@ journalctl -b -u lsi-companion.service --no-pager -n 20
 
 Desde Telegram, enviar `/estado`, `/disco` y `/curiosidad`. Explicar el usuario sin privilegios, dónde están los secretos sin mostrarlos, la fuente externa, el mecanismo de consultas salientes y la comparación con cron.
 
+## 6. Conexiones y monitorización — j), k)
+
+```bash
+ss -tulnp
+ss -tnp state established
+top
+free -h
+watch -n 2 'ss -tunap'
+```
+
+Salir de top con `q` y de watch con `Ctrl+C`. Distinguir puerto en escucha de conexión establecida, puerto servidor de puerto cliente y procesos de sesiones. Explicar la muestra de poca carga y swap sin uso, sin generalizar a todos los instantes.
+
+## 7. Filtrado y evidencia de rechazo — l)
+
+```bash
+ldd /usr/lib/openssh/sshd-session | grep -i libwrap
+tcpdchk -v
+tcpdmatch sshd 10.30.13.239
+tcpdmatch sshd 10.11.49.57
+tcpdmatch sshd 192.0.2.10
+tail -n 5 /var/log/denegados
+```
+
+Explicar precedencia de allow, denegación para sshd, `%a`, logger y rsyslog. Separar la entrada artificial de `192.0.2.10` del rechazo real de loopback. Estas consultas no modifican reglas; sus resultados tras la última aplicación siguen pendientes. No cerrar el único acceso ni repetir la denegación temporal para demostrarlo. El origen VPN del compañero y el acceso Wi-Fi aún no están incluidos.
+
+## 8. Recuperar el mismo evento en ambos registros — m)
+
+```bash
+grep 'LSI-P1-M' /var/log/syslog | tail -n 5
+journalctl -t LSI-P1-M -n 5 --no-pager
+```
+
+Se comprobó el evento a las 15:23:17 del 10/10/2026. Si los logs han rotado, consultar los archivos/arranques correspondientes o generar otro mensaje de prueba identificado. Explicar que esto demuestra registro local, no reenvío entre máquinas.
+
 ## Preguntas que conviene poder responder
 
 | Pregunta | Idea esencial |
@@ -66,5 +100,10 @@ Desde Telegram, enviar `/estado`, `/disco` y `/curiosidad`. Explicar el usuario 
 | ¿Network.target garantiza Internet? | No; el programa debe gestionar la conectividad |
 | ¿El bot es una IA conversacional? | No, reconoce palabras clave y consulta APIs; se desarrolló con ayuda de IA |
 | ¿Una caída del bot bloquea SSH? | No, el bot definitivo no participa en SSH |
+| ¿Dos procesos sshd-session son dos conexiones? | Pueden ser el proceso privilegiado y su hijo de una única sesión |
+| ¿tcpdmatch prueba una conexión real? | No; simula la decisión de reglas |
+| ¿Por qué ldd de sshd no mostraba libwrap? | En esta instalación estaba enlazada en sshd-session |
+| ¿Permitir una IP autentica al usuario? | No; después sigue la autenticación normal de SSH |
+| ¿Rsyslog y journald son incompatibles? | No; se recuperó el mismo evento local en ambos |
 
-Sudo, el inventario de conexiones de j) y los apartados posteriores siguen con los límites indicados en el índice. No presentar como terminados ejercicios pendientes.
+Sudo, el alcance completo de f), la verificación final y ampliación de orígenes de l) y la segunda parte mantienen los pendientes indicados en el índice.
