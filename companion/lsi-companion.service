@@ -1,0 +1,30 @@
+[Unit]
+Description=Compañero Telegram de la máquina virtual
+After=network.target
+
+[Service]
+Type=simple
+User=lsi-companion
+Group=lsi-companion
+LoadCredential=token:/etc/lsi-companion/telegram-token
+LoadCredential=administrador:/etc/lsi-companion/administrador.json
+ExecStart=/usr/bin/python3 -I /usr/local/libexec/lsi-companion.py
+StateDirectory=lsi-companion
+StateDirectoryMode=0700
+UMask=0077
+Restart=on-failure
+RestartSec=15
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+
+[Install]
+WantedBy=multi-user.target
