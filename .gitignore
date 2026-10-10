@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*.tar.gz
+*.zip
+.env
+.env.*
+telegram-token
+administrador.json
+estado.json
+*.jsonl
+*.trace
