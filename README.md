@@ -1,10 +1,16 @@
 # LSI · Práctica 1 · Guía paso a paso para la defensa
 
+> **Documento principal:** [Bitácora completa, con comandos, resultados, errores y cambios retirados](BITACORA_COMPLETA.md). La guía por apartados que aparece debajo sirve como acceso rápido; la bitácora es la referencia exhaustiva para estudiar y reproducir el trabajo.
+
+La edición pública sustituye IP privadas e identificadores de Telegram por variables descriptivas. Esto no elimina pasos: indica qué valor corresponde colocar sin publicar la red ni la cuenta personal. La copia local de trabajo conserva los datos reales.
+
 UDC · Curso 2026 · Actualizado el **10 de octubre de 2026**.
 
 Esta guía recoge lo realizado en la VM de laboratorio y las comprobaciones aportadas. Cada apartado separa los pasos, su explicación, los resultados y lo que sigue pendiente. Las IP corresponden a esta máquina: otro alumno debe usar las asignadas por el profesor.
 
 ## Cómo usar la guía
+
+Empieza por la [bitácora completa](BITACORA_COMPLETA.md) si necesitas reconstruir lo que se hizo en orden. Allí se conserva cada bloque de órdenes disponible, las salidas aportadas, el motivo de cada paso y si terminó vigente, fue solo una prueba o se revirtió.
 
 1. Abre el apartado que te pida el profesor.
 2. Explica su objetivo y los archivos implicados.
@@ -37,10 +43,10 @@ Esta guía recoge lo realizado en la VM de laboratorio y las comprobaciones apor
 | --- | --- |
 | Sistema | Debian 13.7, amd64; kernel `6.12.111+deb13-amd64` |
 | Inicio | `multi-user.target`, sin escritorio |
-| Interfaz principal | `ens33`: `10.11.49.56/23`; gateway `10.11.48.1` |
-| Segunda interfaz | `ens34`: `10.11.51.56/23` |
+| Interfaz principal | `ens33`: `<IP_VM_ENS33>/23`; gateway `<GATEWAY_ENS33>` |
+| Segunda interfaz | `ens34`: `<IP_VM_ENS34>/23` |
 | Administración | SSH habitual por el puerto 22; sin aprobación Telegram |
-| Control de acceso SSH | TCP Wrappers permite `10.30.13.239` y `10.11.49.57`, deniega los demás; aplicación final confirmada por el alumno |
+| Control de acceso SSH | TCP Wrappers permite `<IP_CLIENTE_VPN>` y `<IP_COMPANERO_LAN>`, deniega los demás; aplicación final confirmada por el alumno |
 | Bot definitivo | `lsi-companion.service`: curiosidad al arrancar y consultas de recursos |
 | Curiosidades | Fuente externa Useless Facts; traducción automática MyMemory; no lista fija ni generación con LLM en ejecución |
 | Logs | Journal persistente; rsyslog y registro específico `/var/log/denegados` verificados |
