@@ -43,10 +43,10 @@ Empieza por la [bitácora completa](BITACORA_COMPLETA.md) si necesitas reconstru
 | --- | --- |
 | Sistema | Debian 13.7, amd64; kernel `6.12.111+deb13-amd64` |
 | Inicio | `multi-user.target`, sin escritorio |
-| Interfaz principal | `ens33`: `<IP_VM_ENS33>/23`; gateway `<GATEWAY_ENS33>` |
-| Segunda interfaz | `ens34`: `<IP_VM_ENS34>/23` |
+| Interfaz principal | `ens33`: `IP_VM_ENS33/23`; gateway `GATEWAY_ENS33` |
+| Segunda interfaz | `ens34`: `IP_VM_ENS34/23` |
 | Administración | SSH habitual por el puerto 22; sin aprobación Telegram |
-| Control de acceso SSH | TCP Wrappers permite `<IP_CLIENTE_VPN>` y `<IP_COMPANERO_LAN>`, deniega los demás; aplicación final confirmada por el alumno |
+| Control de acceso SSH | TCP Wrappers permite `IP_CLIENTE_VPN` e `IP_COMPANERO_LAN`, deniega los demás; aplicación final confirmada por el alumno |
 | Bot definitivo | `lsi-companion.service`: curiosidad al arrancar y consultas de recursos |
 | Curiosidades | Fuente externa Useless Facts; traducción automática MyMemory; no lista fija ni generación con LLM en ejecución |
 | Logs | Journal persistente; rsyslog y registro específico `/var/log/denegados` verificados |

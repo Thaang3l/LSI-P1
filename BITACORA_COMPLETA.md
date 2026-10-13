@@ -11,7 +11,7 @@ Esta es la versión extensa y reproducible de la práctica. Está escrita para p
 - **Vigente**: cambio confirmado en el último inventario de la VM.
 - **Retirado**: no forma parte de la configuración final y no debe repetirse como si siguiera activo.
 
-Las contraseñas, el token de Telegram y otros secretos quedan fuera. Las IP internas sí aparecen porque forman parte de la configuración y de las pruebas realizadas. Los PID, puertos de cliente y tiempos son históricos: cambiarán en otras ejecuciones.
+Las contraseñas, el token de Telegram y otros secretos quedan fuera. En la edición pública, las IP internas y los identificadores de Telegram se sustituyen por nombres como `IP_VM_ENS33` o `TELEGRAM_USER_ID`. Los PID, puertos de cliente y tiempos son históricos: cambiarán en otras ejecuciones.
 
 > Esta bitácora conserva deliberadamente los fallos, las pruebas y sus correcciones. Un comando mostrado dentro de una incidencia no debe copiarse sin leer antes su estado y la explicación posterior.
 
@@ -76,17 +76,17 @@ auto lo ens33 ens34
 iface lo inet loopback
 
 iface ens33 inet static
-    address <IP_VM_ENS33>
+    address IP_VM_ENS33
     netmask 255.255.254.0
-    broadcast <BROADCAST_ENS33>
-    network <RED_ENS33>
-    gateway <GATEWAY_ENS33>
+    broadcast BROADCAST_ENS33
+    network RED_ENS33
+    gateway GATEWAY_ENS33
 
 iface ens34 inet static
-    address <IP_VM_ENS34>
+    address IP_VM_ENS34
     netmask 255.255.254.0
-    broadcast <BROADCAST_ENS34>
-    network <RED_ENS34>
+    broadcast BROADCAST_ENS34
+    network RED_ENS34
 ```
 
 Se corrigió una errata `addres` → `address`. La asignación de `ens34` se utilizó y se verificó en la máquina; no se aporta una confirmación independiente de la asignación del profesor.
@@ -94,11 +94,11 @@ Se corrigió una errata `addres` → `address`. La asignación de `ens34` se uti
 | Dato | Explicación |
 | --- | --- |
 | `/23` | Equivale a `255.255.254.0`; agrupa dos bloques consecutivos del tercer octeto |
-| Red `<RED_ENS33>/23` | Incluye `10.11.48.x` y `10.11.49.x` |
-| IP `<IP_VM_ENS33>` | Dirección del equipo, distinta de la dirección de red |
-| Broadcast `<BROADCAST_ENS33>` | Última dirección de esa subred |
-| Gateway `<GATEWAY_ENS33>` | Router configurado; no se obtiene automáticamente sumando uno a la red |
-| Red `<RED_ENS34>/23` | Incluye tanto `10.11.50.x` como `10.11.51.x` |
+| Red `RED_ENS33/23` | Incluye `10.11.48.x` y `10.11.49.x` |
+| IP `IP_VM_ENS33` | Dirección del equipo, distinta de la dirección de red |
+| Broadcast `BROADCAST_ENS33` | Última dirección de esa subred |
+| Gateway `GATEWAY_ENS33` | Router configurado; no se obtiene automáticamente sumando uno a la red |
+| Red `RED_ENS34/23` | Incluye tanto `10.11.50.x` como `10.11.51.x` |
 
 **Respuesta breve:** que `network` termine en `.48.0` no obliga a que todas las IP tengan `.48` en el tercer octeto.
 
@@ -111,7 +111,7 @@ Para demostrar el estado sin cambiarlo:
 ```bash
 ip -br addr
 ip route
-ping -c 3 <GATEWAY_ENS33>
+ping -c 3 GATEWAY_ENS33
 ```
 
 El router respondió sin pérdida. Ambas IP figuraban con `/23`. `UNKNOWN` en una interfaz virtual no significó ausencia de enlace: también se observaron `UP,LOWER_UP` y conectividad en la principal.
@@ -129,7 +129,7 @@ getent ahostsv4 debian
 Inicialmente el nombre `debian` estaba asociado a `127.0.1.1`. Se cambió esa asociación a:
 
 ```text
-<IP_VM_ENS33> debian
+IP_VM_ENS33 debian
 ```
 
 La asociación quedó recogida en el inventario usado en la anterior actualización de los apuntes. Se conservan `localhost` y las entradas IPv6 originales. No se sustituye la palabra `debian` por una IP: el formato es **dirección, seguida de nombre**.
@@ -140,25 +140,25 @@ La asociación quedó recogida en el inventario usado en la anterior actualizaci
 
 ```bash
 cat /etc/resolv.conf
-host archive.debian.org <DNS_AULA_1>
-host archive.debian.org <DNS_AULA_2>
-host archive.debian.org <DNS_AULA_3>
-host archive.debian.org <DNS_UDC_1>
-host archive.debian.org <DNS_UDC_2>
+host archive.debian.org DNS_AULA_1
+host archive.debian.org DNS_AULA_2
+host archive.debian.org DNS_AULA_3
+host archive.debian.org DNS_UDC_1
+host archive.debian.org DNS_UDC_2
 ```
 
-APT no resolvía nombres. Se probaron los DNS individualmente: los tres `10.8.12.x` agotaron el tiempo; `<DNS_UDC_1>` y `<DNS_UDC_2>` sí contestaron consultas DNS. Un ping sin respuesta a un DNS no demuestra que su servicio DNS esté caído.
+APT no resolvía nombres. Se probaron los DNS individualmente: los tres `10.8.12.x` agotaron el tiempo; `DNS_UDC_1` y `DNS_UDC_2` sí contestaron consultas DNS. Un ping sin respuesta a un DNS no demuestra que su servicio DNS esté caído.
 
 Se conservaron las cinco direcciones a petición del alumno, poniendo primero las que respondían:
 
 ```text
 domain udc.pri
 search udc.pri
-nameserver <DNS_UDC_1>
-nameserver <DNS_UDC_2>
-nameserver <DNS_AULA_1>
-nameserver <DNS_AULA_2>
-nameserver <DNS_AULA_3>
+nameserver DNS_UDC_1
+nameserver DNS_UDC_2
+nameserver DNS_AULA_1
+nameserver DNS_AULA_2
+nameserver DNS_AULA_3
 ```
 
 El resolvedor tradicional de glibc usa hasta tres entradas `nameserver`; escribir cinco no hace que consulte las cinco. `domain` y `search` son alternativas del resolvedor: prevalece la última; aquí coinciden. `search` completa nombres cortos con el dominio.
@@ -648,7 +648,7 @@ ip route
 cat /etc/network/interfaces
 ```
 
-Se observó `ens34` con IP `<IP_VM_ENS34>/23`, broadcast `<BROADCAST_ENS34>`, MTU 1500 y flags `UP,LOWER_UP`. La configuración persistente figura en el apartado a). El alias alternativo `enp2s2` no es una segunda tarjeta física.
+Se observó `ens34` con IP `IP_VM_ENS34/23`, broadcast `BROADCAST_ENS34`, MTU 1500 y flags `UP,LOWER_UP`. La configuración persistente figura en el apartado a). El alias alternativo `enp2s2` no es una segunda tarjeta física.
 
 ## Paso 2. Añadir una dirección temporal
 
@@ -659,7 +659,7 @@ ip addr add 192.0.2.56/32 dev ens34 label ens34:0
 ip -4 addr show dev ens34
 ```
 
-La salida mostró simultáneamente `<IP_VM_ENS34>/23` y `192.0.2.56/32`. `ens34:0` es una etiqueta de la dirección adicional: no se creó una tarjeta de red nueva. `/32` identifica una sola dirección y no una red local completa.
+La salida mostró simultáneamente `IP_VM_ENS34/23` y `192.0.2.56/32`. `ens34:0` es una etiqueta de la dirección adicional: no se creó una tarjeta de red nueva. `/32` identifica una sola dirección y no una red local completa.
 
 ## Paso 3. Comprobar la dirección local
 
@@ -676,7 +676,7 @@ ip addr del 192.0.2.56/32 dev ens34
 ip -4 addr show dev ens34
 ```
 
-La consulta final mostró solo `<IP_VM_ENS34>/23`. No se añadió la dirección de prueba a `/etc/network/interfaces`.
+La consulta final mostró solo `IP_VM_ENS34/23`. No se añadió la dirección de prueba a `/etc/network/interfaces`.
 
 ## Alcance y defensa
 
@@ -702,9 +702,9 @@ ip route
 Rutas habituales observadas:
 
 ```text
-default via <GATEWAY_ENS33> dev ens33 onlink
-<RED_ENS33>/23 dev ens33 proto kernel scope link src <IP_VM_ENS33>
-<RED_ENS34>/23 dev ens34 proto kernel scope link src <IP_VM_ENS34>
+default via GATEWAY_ENS33 dev ens33 onlink
+RED_ENS33/23 dev ens33 proto kernel scope link src IP_VM_ENS33
+RED_ENS34/23 dev ens34 proto kernel scope link src IP_VM_ENS34
 ```
 
 Las dos redes `/23` están conectadas directamente. `default` se utiliza cuando no existe una ruta más específica. `src` indica la dirección de origen preferida. La ruta `169.254.0.0/16` que aparecía inicialmente dejó de figurar tras retirar el script de avahi-autoipd.
@@ -712,7 +712,7 @@ Las dos redes `/23` están conectadas directamente. `default` se utiliza cuando 
 ## Paso 2. Añadir una ruta de ejemplo
 
 ```bash
-ip route add 198.51.100.0/24 via <GATEWAY_ENS33> dev ens33
+ip route add 198.51.100.0/24 via GATEWAY_ENS33 dev ens33
 ip route
 ```
 
@@ -727,7 +727,7 @@ ip route get 198.51.100.10
 Salida obtenida:
 
 ```text
-198.51.100.10 via <GATEWAY_ENS33> dev ens33 src <IP_VM_ENS33> uid 0
+198.51.100.10 via GATEWAY_ENS33 dev ens33 src IP_VM_ENS33 uid 0
     cache
 ```
 
@@ -740,7 +740,7 @@ La ruta se añadió con `ip route`, sin una configuración persistente documenta
 Si se repite la demostración, la operación inversa es:
 
 ```bash
-ip route del 198.51.100.0/24 via <GATEWAY_ENS33> dev ens33
+ip route del 198.51.100.0/24 via GATEWAY_ENS33 dev ens33
 ```
 
 ## Para la defensa
@@ -1077,7 +1077,7 @@ Escuchar no prueba que el servicio sea accesible desde cualquier red: influyen l
 
 La salida no mostró sockets UDP. Es una observación del momento, no una garantía permanente.
 
-Había dos conexiones establecidas hacia `<IP_VM_ENS33>:22` desde `<IP_CLIENTE_VPN>`, con puertos cliente `63418` y `63441`. Python, PID 582, mantenía otra conexión hacia `149.154.166.110:443`. Es compatible con el bot, pero el listado no verificó su comando ni la identidad del destino: el puerto 443 por sí solo no demuestra Telegram o HTTPS.
+Había dos conexiones establecidas hacia `IP_VM_ENS33:22` desde `IP_CLIENTE_VPN`, con puertos cliente `63418` y `63441`. Python, PID 582, mantenía otra conexión hacia `149.154.166.110:443`. Es compatible con el bot, pero el listado no verificó su comando ni la identidad del destino: el puerto 443 por sí solo no demuestra Telegram o HTTPS.
 
 ## Paso 4. Distinguir conexiones, sesiones y procesos
 
@@ -1262,7 +1262,7 @@ La reparación indicada fue `apt install --reinstall libwrap0`. No quedó pegada
 En `/root/lsi-tcpwrappers-prueba`, se probaron archivos locales:
 
 ```text
-hosts.allow: sshd: <IP_CLIENTE_VPN>
+hosts.allow: sshd: IP_CLIENTE_VPN
 hosts.deny:  sshd: ALL
 ```
 
@@ -1270,7 +1270,7 @@ Estas dos líneas resumen **dos archivos distintos**, no son un bloque para copi
 
 ```bash
 tcpdchk -d -v
-tcpdmatch -d sshd <IP_CLIENTE_VPN>
+tcpdmatch -d sshd IP_CLIENTE_VPN
 tcpdmatch -d sshd 192.0.2.10
 ```
 
@@ -1314,7 +1314,7 @@ Esto aportó evidencia de la integración TCP Wrappers → logger → rsyslog. L
 
 ## Paso 6. Validar la lista autorizada
 
-Se ensayó permitir `<IP_CLIENTE_VPN>` y denegar el resto para `sshd`, con un respaldo y temporizadores transitorios de recuperación. `tcpdchk -v` enumeró ambas reglas y `tcpdmatch` permitió la IP VPN y denegó `192.0.2.10`.
+Se ensayó permitir `IP_CLIENTE_VPN` y denegar el resto para `sshd`, con un respaldo y temporizadores transitorios de recuperación. `tcpdchk -v` enumeró ambas reglas y `tcpdmatch` permitió la IP VPN y denegó `192.0.2.10`.
 
 El alumno confirmó que abrió una **nueva** sesión desde CMD de Windows y restauró los archivos. Las consultas posteriores no mostraron reglas activas ni temporizadores de recuperación tras detener el timer v2. Esto validó el ensayo y su retirada; no demuestra una conexión real desde la IP documental de prueba.
 
@@ -1322,12 +1322,12 @@ Los temporizadores de ese ensayo ya no estaban pendientes en la última comproba
 
 ## Paso 7. Política permanente comunicada
 
-Después del ensayo, el alumno decidió mantener el filtrado y comunicó la VM del compañero `<IP_COMPANERO_LAN>`. Recibió las reglas y confirmó «listo».
+Después del ensayo, el alumno decidió mantener el filtrado y comunicó la VM del compañero `IP_COMPANERO_LAN`. Recibió las reglas y confirmó «listo».
 
 Contenido activo comunicado de **`/etc/hosts.allow`**, conservando sus comentarios originales:
 
 ```text
-sshd: <IP_CLIENTE_VPN>, <IP_COMPANERO_LAN>
+sshd: IP_CLIENTE_VPN, IP_COMPANERO_LAN
 ```
 
 Contenido activo comunicado de **`/etc/hosts.deny`**, conservando sus comentarios originales:
@@ -1344,7 +1344,7 @@ La autorización es por **IP de origen**, no por identidad de una persona ni por
 
 - Comprobar con salidas la configuración posterior a la confirmación final, y una conexión nueva con esa política exacta.
 - Obtener la IP de VPN del compañero y el origen o rango autorizado del Wi-Fi universitario.
-- Revisar qué ocurre cuando cambia la IP VPN del alumno. No se ha demostrado que `<IP_CLIENTE_VPN>` sea fija.
+- Revisar qué ocurre cuando cambia la IP VPN del alumno. No se ha demostrado que `IP_CLIENTE_VPN` sea fija.
 - Probar desde la VM compañera: su dirección se comunicó, pero no se aportó una sesión real desde ella.
 - Revisar la rotación de `/var/log/denegados` si se conserva a largo plazo.
 
@@ -1353,8 +1353,8 @@ Consultas de verificación propuestas para la defensa; **no se han vuelto a ejec
 ```bash
 grep -vE '^[[:space:]]*(#|$)' /etc/hosts.allow /etc/hosts.deny
 tcpdchk -v
-tcpdmatch sshd <IP_CLIENTE_VPN>
-tcpdmatch sshd <IP_COMPANERO_LAN>
+tcpdmatch sshd IP_CLIENTE_VPN
+tcpdmatch sshd IP_COMPANERO_LAN
 tcpdmatch sshd 192.0.2.10
 tail -n 5 /var/log/denegados
 ```
@@ -1457,7 +1457,7 @@ Cuaderno de estudio de la práctica 1. Actualizado hasta el 9 de octubre de 2026
 | Parte | Estado |
 | --- | --- |
 | a) Interfaces | Aplicadas; conexión al router comprobada |
-| a) hosts | Archivo confirmado: <IP_VM_ENS33> debian |
+| a) hosts | Archivo confirmado: IP_VM_ENS33 debian |
 | a) resolv.conf | Resolución reparada y verificada; DNS originales primero |
 | a) nsswitch.conf | Estado actual: files mdns4_minimal [NOTFOUND=return] dns |
 | a) sources.list | Adaptado en cada salto; errores documentados |
@@ -1470,7 +1470,7 @@ Cuaderno de estudio de la práctica 1. Actualizado hasta el 9 de octubre de 2026
 
 ## 1. /etc/network/interfaces
 
-IP asignada indicada por el alumno: **<IP_VM_ENS33>**. Nombre observado: **debian**.
+IP asignada indicada por el alumno: **IP_VM_ENS33**. Nombre observado: **debian**.
 
 Configuración aplicada:
 
@@ -1480,30 +1480,30 @@ auto lo ens33 ens34
 iface lo inet loopback
 
 iface ens33 inet static
-    address <IP_VM_ENS33>
+    address IP_VM_ENS33
     netmask 255.255.254.0
-    broadcast <BROADCAST_ENS33>
-    network <RED_ENS33>
-    gateway <GATEWAY_ENS33>
+    broadcast BROADCAST_ENS33
+    network RED_ENS33
+    gateway GATEWAY_ENS33
 
 iface ens34 inet static
-    address <IP_VM_ENS34>
+    address IP_VM_ENS34
     netmask 255.255.254.0
-    broadcast <BROADCAST_ENS34>
-    network <RED_ENS34>
+    broadcast BROADCAST_ENS34
+    network RED_ENS34
 ```
 
 Se corrigió `addres` por `address`.
 
 ### Por qué network es .48 y la IP es .49
 
-La máscara 255.255.254.0 equivale a /23. La red <RED_ENS33>/23 abarca los bloques 10.11.48.x y 10.11.49.x. Sus hosts utilizables van de <GATEWAY_ENS33> a <IP_PRUEBA_LAN>; <BROADCAST_ENS33> es el broadcast.
+La máscara 255.255.254.0 equivale a /23. La red RED_ENS33/23 abarca los bloques 10.11.48.x y 10.11.49.x. Sus hosts utilizables van de GATEWAY_ENS33 a IP_PRUEBA_LAN; BROADCAST_ENS33 es el broadcast.
 
-La puerta de enlace <GATEWAY_ENS33> es el router del ejemplo y respondió desde la máquina. No se calcula a partir de la IP ni tiene que terminar en .1.
+La puerta de enlace GATEWAY_ENS33 es el router del ejemplo y respondió desde la máquina. No se calcula a partir de la IP ni tiene que terminar en .1.
 
 ### Por qué se propuso ens34 con .51
 
-Se conservó la posición al pasar de la red <RED_ENS33>/23 a <RED_ENS34>/23: 49 pasa a 51. **Es una inferencia del ejemplo; falta confirmar la asignación del profesor.** <IP_ALTERNATIVA_ENS34> también pertenece a la segunda red, pero es otra posición.
+Se conservó la posición al pasar de la red RED_ENS33/23 a RED_ENS34/23: 49 pasa a 51. **Es una inferencia del ejemplo; falta confirmar la asignación del profesor.** IP_ALTERNATIVA_ENS34 también pertenece a la segunda red, pero es otra posición.
 
 ### Comprobaciones realizadas
 
@@ -1512,7 +1512,7 @@ sudo ifup --no-act ens33 ens34
 sudo systemctl restart networking
 ip route
 ip -br addr
-ping -c 4 <GATEWAY_ENS33>
+ping -c 4 GATEWAY_ENS33
 ```
 
 `--no-act` muestra las operaciones previstas sin ejecutarlas; no comprueba conectividad ni detecta todos los errores. Aplicar cambios desde la consola de la VM permite recuperar el acceso si se interrumpe SSH.
@@ -1520,13 +1520,13 @@ ping -c 4 <GATEWAY_ENS33>
 Resultado observado:
 
 ```text
-default via <GATEWAY_ENS33> dev ens33 onlink
-<RED_ENS33>/23 dev ens33 proto kernel scope link src <IP_VM_ENS33>
-<RED_ENS34>/23 dev ens34 proto kernel scope link src <IP_VM_ENS34>
+default via GATEWAY_ENS33 dev ens33 onlink
+RED_ENS33/23 dev ens33 proto kernel scope link src IP_VM_ENS33
+RED_ENS34/23 dev ens34 proto kernel scope link src IP_VM_ENS34
 169.254.0.0/16 dev ens33 scope link metric 1000
 ```
 
-- ens33: <IP_VM_ENS33>/23; ens34: <IP_VM_ENS34>/23.
+- ens33: IP_VM_ENS33/23; ens34: IP_VM_ENS34/23.
 - Ping al router: cuatro respuestas, 0 % de pérdida.
 - UNKNOWN no impidió la comunicación en ens33.
 - La ruta 169.254.0.0/16 pertenecía al estado inicial. Posteriormente se identificó su origen en el script avahi-autoipd y dejó de aparecer tras retirar ese script; véase sección 8.
@@ -1548,7 +1548,7 @@ ff02::2 ip6-allrouters
 127.0.1.1 debian es una configuración válida y habitual. Se propuso sustituir esa línea por:
 
 ```text
-<IP_VM_ENS33> debian
+IP_VM_ENS33 debian
 ```
 
 Se conservan localhost y las entradas IPv6. El enunciado pide analizar estos archivos; no exige expresamente ese cambio.
@@ -1562,39 +1562,39 @@ El primero mostró IPv6 locales de enlace (fe80::). Eso no demuestra que hosts e
 
 ## 3. /etc/resolv.conf: DNS y resolución del fallo
 
-Contenido inicial: dominio y búsqueda udc.pri, con DNS <DNS_UDC_1> y <DNS_UDC_2>. Se añadieron <DNS_AULA_1>, <DNS_AULA_2> y <DNS_AULA_3> y llegaron a ocupar las tres primeras posiciones.
+Contenido inicial: dominio y búsqueda udc.pri, con DNS DNS_UDC_1 y DNS_UDC_2. Se añadieron DNS_AULA_1, DNS_AULA_2 y DNS_AULA_3 y llegaron a ocupar las tres primeras posiciones.
 
 - domain establece el dominio local; search permite completar nombres cortos. En el resolvedor tradicional son alternativas y prevalece la última; aquí coinciden.
 - nameserver identifica un servidor DNS. Una IP de la red no es necesariamente un DNS.
 - El resolvedor tradicional de glibc utiliza hasta tres entradas nameserver. Tener cinco no implica utilizar las cinco.
 
-**Síntoma:** APT mostraba «No se pudo resolver» y getent no devolvía direcciones. El router <GATEWAY_ENS33> respondía al ping, pero <DNS_UDC_1> no. Ese ping fallido no demostraba que DNS estuviera roto: ICMP y DNS son servicios distintos.
+**Síntoma:** APT mostraba «No se pudo resolver» y getent no devolvía direcciones. El router GATEWAY_ENS33 respondía al ping, pero DNS_UDC_1 no. Ese ping fallido no demostraba que DNS estuviera roto: ICMP y DNS son servicios distintos.
 
 No había dig ni nslookup. Se usó host para consultar cada DNS sin cambiar primero el archivo:
 
 ~~~bash
-host archive.debian.org <DNS_AULA_1>
-host archive.debian.org <DNS_AULA_2>
-host archive.debian.org <DNS_AULA_3>
-host archive.debian.org <DNS_UDC_1>
-host archive.debian.org <DNS_UDC_2>
+host archive.debian.org DNS_AULA_1
+host archive.debian.org DNS_AULA_2
+host archive.debian.org DNS_AULA_3
+host archive.debian.org DNS_UDC_1
+host archive.debian.org DNS_UDC_2
 ~~~
 
 | Servidor | Resultado observado |
 | --- | --- |
-| <DNS_AULA_1>, <DNS_AULA_2>, <DNS_AULA_3> | Tiempo de espera agotado desde esta máquina |
-| <DNS_UDC_1> y <DNS_UDC_2> | Respuesta DNS correcta para archive.debian.org |
+| DNS_AULA_1, DNS_AULA_2, DNS_AULA_3 | Tiempo de espera agotado desde esta máquina |
+| DNS_UDC_1 y DNS_UDC_2 | Respuesta DNS correcta para archive.debian.org |
 
 **Solución aplicada:** conservar las cinco direcciones, como pidió el alumno, y colocar primero las dos que respondían:
 
 ~~~text
 domain udc.pri
 search udc.pri
-nameserver <DNS_UDC_1>
-nameserver <DNS_UDC_2>
-nameserver <DNS_AULA_1>
-nameserver <DNS_AULA_2>
-nameserver <DNS_AULA_3>
+nameserver DNS_UDC_1
+nameserver DNS_UDC_2
+nameserver DNS_AULA_1
+nameserver DNS_AULA_2
+nameserver DNS_AULA_3
 ~~~
 
 Las dos últimas quedan escritas pero fuera del límite del resolvedor tradicional. No se ha determinado la función de las tres IP 10.8.12.x; no afirmar que sean inútiles en todos los entornos.
@@ -1996,7 +1996,7 @@ Este apartado describe lo que permanece aplicado según las últimas salidas com
 - Debian 13.7, kernel `6.12.111+deb13-amd64`, arquitectura amd64.
 - VMware, una CPU virtual y aproximadamente 1,4 GiB de RAM visible.
 - Arranque por `multi-user.target`, sin escritorio. Se aplicó `systemctl set-default multi-user.target`.
-- Red estática conservada: ens33 `<IP_VM_ENS33>/23`, ens34 `<IP_VM_ENS34>/23`, gateway `<GATEWAY_ENS33>` por ens33. DNS funciona en las comprobaciones con `getent`.
+- Red estática conservada: ens33 `IP_VM_ENS33/23`, ens34 `IP_VM_ENS34/23`, gateway `GATEWAY_ENS33` por ens33. DNS funciona en las comprobaciones con `getent`.
 - Última medida: **6,389 s de kernel/preparación inicial + 10,031 s de userspace = 16,421 s**. `multi-user.target` se alcanzó a los 10,030 s de userspace. No equivale al tiempo completo desde pulsar encendido ni demuestra por sí solo el instante de acceso SSH desde otro equipo.
 - Última comprobación: cero unidades fallidas, swap de 1,5 GiB activa y sin uso.
 - Último espacio comprobado: raíz de 13 GB, 3,1 GB usados, 8,6 GB disponibles (27 %).
@@ -2170,8 +2170,8 @@ Este inventario procede del repositorio, **no de una nueva revisión de la VM**.
 
 - Debian 13.7, amd64; kernel `6.12.111+deb13-amd64`.
 - Target de inicio `multi-user.target`.
-- `ens33`: `<IP_VM_ENS33>/23`; gateway `<GATEWAY_ENS33>`.
-- `ens34`: `<IP_VM_ENS34>/23`.
+- `ens33`: `IP_VM_ENS33/23`; gateway `GATEWAY_ENS33`.
+- `ens34`: `IP_VM_ENS34/23`.
 - SSH habitual en puerto 22.
 - Bot `lsi-companion.service`, con consulta de datos y curiosidades por Telegram.
 - Última medición de arranque: kernel 6,891 s + userspace 10,465 s = 17,356 s.
@@ -2439,9 +2439,9 @@ Cada 2,0s: ss -tunap                            debian: Sat Oct 10 15:59:31 2026
 Netid State  Recv-Q Send-Q  Local Address:Port      Peer Address:Port     Process
 tcp   LISTEN 0      128     0.0.0.0:22               0.0.0.0:*             users:(("sshd",pid=631,fd=6))
 tcp   LISTEN 0      128     127.0.0.1:6010           0.0.0.0:*             users:(("sshd-session",pid=1218,fd=11))
-tcp   ESTAB  0      0       <IP_VM_ENS33>:22           <IP_CLIENTE_VPN>:63418   users:(("sshd-session",pid=1218,fd=7),("sshd-session",pid=1167,fd=7))
-tcp   ESTAB  0      0       <IP_VM_ENS33>:22           <IP_CLIENTE_VPN>:63441   users:(("sshd-session",pid=1219,fd=7),("sshd-session",pid=1172,fd=7))
-tcp   ESTAB  0      0       <IP_VM_ENS33>:39880        149.154.166.110:443  users:(("python3",pid=582,fd=4))
+tcp   ESTAB  0      0       IP_VM_ENS33:22           IP_CLIENTE_VPN:63418   users:(("sshd-session",pid=1218,fd=7),("sshd-session",pid=1167,fd=7))
+tcp   ESTAB  0      0       IP_VM_ENS33:22           IP_CLIENTE_VPN:63441   users:(("sshd-session",pid=1219,fd=7),("sshd-session",pid=1172,fd=7))
+tcp   ESTAB  0      0       IP_VM_ENS33:39880        149.154.166.110:443  users:(("python3",pid=582,fd=4))
 tcp   LISTEN 0      128     [::1]:6010               [::]:*               users:(("sshd-session",pid=1218,fd=10))
 tcp   LISTEN 0      128     [::]:22                   [::]:*               users:(("sshd",pid=631,fd=7))
 ```
@@ -2450,7 +2450,7 @@ tcp   LISTEN 0      128     [::]:22                   [::]:*               users
 - `watch -n 2` ejecuta y refresca cada dos segundos el listado; salir con `Ctrl+C`.
 - `ss -tunap`: `-t` TCP, `-u` UDP, `-n` direcciones/puertos numéricos, `-a` sockets tanto activos como en escucha, `-p` procesos asociados cuando se conocen.
 - `LISTEN` indica socket preparado para aceptar conexiones. El servicio `sshd` (PID 631) aparece escuchando en puerto 22 de todas las interfaces IPv4 (`0.0.0.0`) e IPv6 (`[::]`). Esto no prueba accesibilidad desde cualquier origen: también intervienen rutas y filtrado.
-- `ESTAB`/`ESTABLISHED` indica conexión TCP establecida. Hay dos conexiones SSH hacia `<IP_VM_ENS33>:22` desde `<IP_CLIENTE_VPN>`, con puertos de cliente efímeros distintos (`63418` y `63441`). No se ha demostrado qué equipo o persona ocupa esa IP.
+- `ESTAB`/`ESTABLISHED` indica conexión TCP establecida. Hay dos conexiones SSH hacia `IP_VM_ENS33:22` desde `IP_CLIENTE_VPN`, con puertos de cliente efímeros distintos (`63418` y `63441`). No se ha demostrado qué equipo o persona ocupa esa IP.
 - `127.0.0.1:6010` y `[::1]:6010` son sockets locales en loopback de `sshd-session`, compatibles con reenvío X11. No son puertos expuestos en todas las interfaces.
 - `python3` (PID 582) mantiene una conexión saliente a `149.154.166.110:443` desde el puerto local `39880`. Es compatible con el bot de Telegram documentado, pero no se ha verificado la identidad del proceso ni el destino concreto; no afirmarlo como hecho en la defensa sin comprobarlo.
 - `Recv-Q`/`Send-Q` aparecen en cero para las conexiones establecidas de la captura; no indica por sí solo ausencia de tráfico en otros instantes.
@@ -2552,15 +2552,15 @@ ii  openssh-server 1:10.0p1-7+deb13u4 amd64
 Conexiones activas comprobadas mediante `ss -tnp state established`:
 
 ```text
-<IP_VM_ENS33>:22    <IP_CLIENTE_VPN>:63418       sshd-session
-<IP_VM_ENS33>:50728 149.154.166.110:443     python3, pid=582
-<IP_VM_ENS33>:22    <IP_CLIENTE_VPN>:63441       sshd-session
+IP_VM_ENS33:22    IP_CLIENTE_VPN:63418       sshd-session
+IP_VM_ENS33:50728 149.154.166.110:443     python3, pid=582
+IP_VM_ENS33:22    IP_CLIENTE_VPN:63441       sshd-session
 ```
 
 **Interpretación:**
 - `sshd-session` enlaza dinámicamente con `libwrap.so.0`; a diferencia del `sshd` principal, es el binario pertinente para verificar la integración con TCP Wrappers en esta versión de OpenSSH para Debian.
 - El nombre del servicio que solicita la biblioteca en el código del parche de Debian es `sshd`, aunque el ejecutable se llame `sshd-session`. Las reglas de acceso se redactarán para `sshd`.
-- Las dos conexiones SSH observadas proceden de `<IP_CLIENTE_VPN>` (puertos origen distintos). No se ha confirmado si esa IP es estable o asignada dinámicamente por la VPN; no crear una política de denegación antes de planificar recuperación y verificar la IP autorizada.
+- Las dos conexiones SSH observadas proceden de `IP_CLIENTE_VPN` (puertos origen distintos). No se ha confirmado si esa IP es estable o asignada dinámicamente por la VPN; no crear una política de denegación antes de planificar recuperación y verificar la IP autorizada.
 - La conexión saliente de Python a 149.154.166.110:443 es compatible con el bot de Telegram documentado, pero no se ha confirmado el comando del PID 582.
 
 **Comprobación externa:**
@@ -2582,8 +2582,8 @@ who
 Salida:
 
 ```text
-lsi      sshd pts/0   2026-10-10 14:53 (<IP_CLIENTE_VPN>)
-lsi      sshd pts/0   2026-10-10 14:53 (<IP_CLIENTE_VPN>)
+lsi      sshd pts/0   2026-10-10 14:53 (IP_CLIENTE_VPN)
+lsi      sshd pts/0   2026-10-10 14:53 (IP_CLIENTE_VPN)
 ```
 
 ```bash
@@ -2595,14 +2595,14 @@ Salida:
 ```text
 16:33:15 up 15:50, 2 users, load average: 0,00, 0,00, 0,00
 USUARIO  TTY      DESDE            LOGIN@   IDLE   JCPU   PCPU  WHAT
-lsi               <IP_CLIENTE_VPN>     14:53           0.00s  0.03s sshd-session: l
-lsi      pts/0    <IP_CLIENTE_VPN>     14:53    3.00s  0.10s  0.05s sshd-session: l
+lsi               IP_CLIENTE_VPN     14:53           0.00s  0.03s sshd-session: l
+lsi      pts/0    IP_CLIENTE_VPN     14:53    3.00s  0.10s  0.05s sshd-session: l
 ```
 
 **Interpretación para la defensa:**
-- Dos sesiones registradas para el mismo usuario `lsi`, ambas desde `<IP_CLIENTE_VPN>` con hora de inicio 14:53; `2 users` no implica dos personas.
+- Dos sesiones registradas para el mismo usuario `lsi`, ambas desde `IP_CLIENTE_VPN` con hora de inicio 14:53; `2 users` no implica dos personas.
 - `w` muestra una sesión asociada a `pts/0` (pseudoterminal) y otra sin TTY visible. Puede deberse a una conexión no interactiva, un túnel u otra funcionalidad de SSH, pero su propósito exacto no se ha verificado.
-- Ambas conexiones TCP a `<IP_VM_ENS33>:22` utilizan puertos remotos diferentes (`63418`, `63441`) y constituyen conexiones distintas.
+- Ambas conexiones TCP a `IP_VM_ENS33:22` utilizan puertos remotos diferentes (`63418`, `63441`) y constituyen conexiones distintas.
 - El formato duplicado de `who` no permite atribuir más detalles; verificar procesos de sesiones si es necesario.
 
 **Comprobación adicional propuesta (solo lectura):**
@@ -2656,11 +2656,11 @@ ss -tnp state established
 **Salida facilitada:**
 ```text
 Recv-Q Send-Q Local Address:Port Peer Address:Port Process
-0      212    <IP_VM_ENS33>:22    <IP_CLIENTE_VPN>:63418 users:(("sshd-session",pid=1218,fd=7),("sshd-session",pid=1167,fd=7))
-0      0      <IP_VM_ENS33>:48400 149.154.166.110:443 users:(("python3",pid=582,fd=4))
+0      212    IP_VM_ENS33:22    IP_CLIENTE_VPN:63418 users:(("sshd-session",pid=1218,fd=7),("sshd-session",pid=1167,fd=7))
+0      0      IP_VM_ENS33:48400 149.154.166.110:443 users:(("python3",pid=582,fd=4))
 ```
 
-**Conclusión:** solamente queda una conexión SSH establecida a `<IP_VM_ENS33>:22`, originada desde `<IP_CLIENTE_VPN>:63418`. La segunda conexión antes observada con puerto de origen `63441` ya no aparece. El proceso Python mantiene una conexión TLS/HTTPS al puerto remoto 443; su identificación como bot de Telegram sigue siendo probable, no confirmada por inspección del comando.
+**Conclusión:** solamente queda una conexión SSH establecida a `IP_VM_ENS33:22`, originada desde `IP_CLIENTE_VPN:63418`. La segunda conexión antes observada con puerto de origen `63441` ya no aparece. El proceso Python mantiene una conexión TLS/HTTPS al puerto remoto 443; su identificación como bot de Telegram sigue siendo probable, no confirmada por inspección del comando.
 
 **Precaución para el apartado l:** la única sesión SSH observada no debe ponerse en riesgo aplicando de inmediato una denegación general. Aún no se han configurado ni probado las reglas `/etc/hosts.allow`, `/etc/hosts.deny` ni `/var/log/denegados`. Antes, comprobar respaldo de archivos, disponibilidad de herramientas de prueba (`tcpdmatch` y `tcpdchk`) y estabilidad de la IP del cliente.
 
@@ -2679,7 +2679,7 @@ command -v tcpdchk
 
 **Resultados aportados:** la creación del directorio y las copias terminaron sin mensajes de error. `command -v tcpdmatch` y `command -v tcpdchk` no devolvieron rutas; es probable que no esté instalado el paquete `tcpd`, pero se verificará mediante `dpkg -l` o `apt-cache policy`.
 
-**Nuevo dato de acceso:** el alumno se conecta a la VM mediante VPN de la UDC y también desde la red Wi-Fi universitaria cuando está en el campus. La IP de origen observada por SSH desde VPN es `<IP_CLIENTE_VPN>`; la IP/rango desde Wi-Fi no se ha identificado y puede diferir. No asumir que `<IP_CLIENTE_VPN>` es fija.
+**Nuevo dato de acceso:** el alumno se conecta a la VM mediante VPN de la UDC y también desde la red Wi-Fi universitaria cuando está en el campus. La IP de origen observada por SSH desde VPN es `IP_CLIENTE_VPN`; la IP/rango desde Wi-Fi no se ha identificado y puede diferir. No asumir que `IP_CLIENTE_VPN` es fija.
 
 **Riesgo:** una regla de denegación por defecto con una lista de permisos que solamente incluya la IP de VPN actual podría impedir nuevas conexiones desde Wi-Fi o tras un cambio de IP de VPN. La sesión SSH existente podría continuar, pero no constituye una garantía de recuperación.
 
@@ -2732,14 +2732,14 @@ Salida:
 ```bash
 mkdir -p /root/lsi-tcpwrappers-prueba
 cd /root/lsi-tcpwrappers-prueba
-printf 'sshd: <IP_CLIENTE_VPN>\n' > hosts.allow
+printf 'sshd: IP_CLIENTE_VPN\n' > hosts.allow
 printf 'sshd: ALL\n' > hosts.deny
 tcpdchk -d -v
-tcpdmatch -d sshd <IP_CLIENTE_VPN>
+tcpdmatch -d sshd IP_CLIENTE_VPN
 tcpdmatch -d sshd 192.0.2.10
 ```
 
-**Resultados esperados, aún no comprobados:** permitir `<IP_CLIENTE_VPN>` y denegar `192.0.2.10`, dirección de documentación. Con `-d`, las herramientas leen los archivos del directorio actual. Si `tcpdchk` avisa de que `sshd` no pertenece a inetd, revisar el aviso considerando que SSH se gestiona mediante systemd, y que ya se confirmó el enlace de `sshd-session` con libwrap.
+**Resultados esperados, aún no comprobados:** permitir `IP_CLIENTE_VPN` y denegar `192.0.2.10`, dirección de documentación. Con `-d`, las herramientas leen los archivos del directorio actual. Si `tcpdchk` avisa de que `sshd` no pertenece a inetd, revisar el aviso considerando que SSH se gestiona mediante systemd, y que ya se confirmó el enlace de `sshd-session` con libwrap.
 
 **Advertencia operativa:** aún falta determinar los rangos o IP autorizados desde Wi-Fi UDC y VPN para evitar bloquear accesos remotos. No aplicar todavía una denegación global real. La configuración de registros rechazados en `/var/log/denegados` sigue pendiente.
 
@@ -2826,7 +2826,7 @@ ls -lh /usr/lib/x86_64-linux-gnu/libwrap.so.0.7.6
 file -L /lib/x86_64-linux-gnu/libwrap.so.0
 dpkg -V libwrap0
 tcpdchk -d -v
-tcpdmatch -d sshd <IP_CLIENTE_VPN>
+tcpdmatch -d sshd IP_CLIENTE_VPN
 tcpdmatch -d sshd 192.0.2.10
 ```
 Mantener abierta la sesión SSH actual, no reiniciar VM ni `sshd`, y detenerse si APT propone eliminar otros paquetes. La simulación de reglas debe ejecutarse desde `/root/lsi-tcpwrappers-prueba` y las reglas reales aún no se han aplicado. `/var/log/denegados` sigue pendiente.
@@ -2858,7 +2858,7 @@ No produjo salida.
 
 **Interpretación:** el archivo ha pasado de 0 bytes a 47 KB, es una biblioteca ELF válida y `dpkg -V` no detecta discrepancias de integridad. La avería observada se considera reparada. En este turno no se proporcionó la salida de `apt install --reinstall libwrap0`, por lo que se documenta la verificación del estado final, no el detalle de la ejecución de APT.
 
-**Siguiente fase propuesta, todavía pendiente:** comprobar los contenidos de `hosts.allow` y `hosts.deny` dentro de `/root/lsi-tcpwrappers-prueba` y ejecutar `tcpdchk -d -v` y `tcpdmatch -d sshd` con la IP <IP_CLIENTE_VPN> y la IP de prueba 192.0.2.10. No se deben aplicar reglas reales de denegación hasta comprobar las IP/redes de acceso por VPN y Wi-Fi UDC y planear recuperación. El registro en `/var/log/denegados` sigue pendiente.
+**Siguiente fase propuesta, todavía pendiente:** comprobar los contenidos de `hosts.allow` y `hosts.deny` dentro de `/root/lsi-tcpwrappers-prueba` y ejecutar `tcpdchk -d -v` y `tcpdmatch -d sshd` con la IP IP_CLIENTE_VPN y la IP de prueba 192.0.2.10. No se deben aplicar reglas reales de denegación hasta comprobar las IP/redes de acceso por VPN y Wi-Fi UDC y planear recuperación. El registro en `/var/log/denegados` sigue pendiente.
 
 **Estado del apartado l:** EN CURSO; biblioteca reparada y comprobada; reglas simuladas todavía sin verificar.
 
@@ -2870,7 +2870,7 @@ No produjo salida.
 cat hosts.allow hosts.deny
 ```
 ```text
-sshd: <IP_CLIENTE_VPN>
+sshd: IP_CLIENTE_VPN
 sshd: ALL
 ```
 
@@ -2883,7 +2883,7 @@ Using network configuration file: (null)
 
 >>> Rule hosts.allow line 1:
 daemons:  sshd
-clients:  <IP_CLIENTE_VPN>
+clients:  IP_CLIENTE_VPN
 access:   granted
 
 >>> Rule hosts.deny line 1:
@@ -2894,10 +2894,10 @@ access:   denied
 
 **Simulación de conexión autorizada:**
 ```bash
-tcpdmatch -d sshd <IP_CLIENTE_VPN>
+tcpdmatch -d sshd IP_CLIENTE_VPN
 ```
 ```text
-client:   address  <IP_CLIENTE_VPN>
+client:   address  IP_CLIENTE_VPN
 server:   process  sshd
 access:   granted
 ```
@@ -3015,7 +3015,7 @@ active
 cd /root/lsi-tcpwrappers-prueba
 printf '%s\n' 'sshd: ALL: spawn /usr/bin/logger -p authpriv.notice -t LSI_TCP_DENEGADO "SSH rechazado desde %a" : deny' > hosts.deny
 tcpdchk -d -v
-tcpdmatch -d sshd <IP_CLIENTE_VPN>
+tcpdmatch -d sshd IP_CLIENTE_VPN
 tcpdmatch -d sshd 192.0.2.10
 ```
 La opción `%a` representa la dirección del cliente; `spawn` lanza el comando `logger` al coincidir la regla real. La hora la añade rsyslog. En modo `-d` se utilizan los archivos del directorio de pruebas; aún no debe copiarse la regla a `/etc/hosts.deny`, porque el alumno requiere acceso desde VPN y Wi-Fi UDC y los rangos autorizados no se han identificado. Conforme al enunciado, no se añaden comentarios a ficheros de configuración.
@@ -3031,7 +3031,7 @@ La opción `%a` representa la dirección del cliente; `spawn` lanza el comando `
 ```bash
 printf '%s\n' 'sshd: ALL: spawn /usr/bin/logger -p authpriv.notice -t LSI_TCP_DENEGADO "SSH rechazado desde %a" : deny' > hosts.deny
 tcpdchk -d -v
-tcpdmatch -d sshd <IP_CLIENTE_VPN>
+tcpdmatch -d sshd IP_CLIENTE_VPN
 tcpdmatch -d sshd 192.0.2.10
 ```
 
@@ -3039,7 +3039,7 @@ tcpdmatch -d sshd 192.0.2.10
 ```text
 >>> Rule hosts.allow line 1:
 daemons:  sshd
-clients:  <IP_CLIENTE_VPN>
+clients:  IP_CLIENTE_VPN
 access:   granted
 
 >>> Rule hosts.deny line 1:
@@ -3047,7 +3047,7 @@ daemons:  sshd
 clients:  ALL
 access:   denied
 
-client:   address  <IP_CLIENTE_VPN>
+client:   address  IP_CLIENTE_VPN
 server:   process  sshd
 access:   granted
 
@@ -3056,7 +3056,7 @@ server:   process  sshd
 access:   denied
 ```
 
-**Interpretación:** configuración de prueba sintácticamente correcta, con permiso para <IP_CLIENTE_VPN> y denegación del resto. La presencia de `spawn` se ha aceptado sintácticamente; `tcpdmatch` simula la decisión, pero no ejecuta `logger` ni demuestra todavía que se haya registrado una denegación de SSH real.
+**Interpretación:** configuración de prueba sintácticamente correcta, con permiso para IP_CLIENTE_VPN y denegación del resto. La presencia de `spawn` se ha aceptado sintácticamente; `tcpdmatch` simula la decisión, pero no ejecuta `logger` ni demuestra todavía que se haya registrado una denegación de SSH real.
 
 **Siguiente experimento propuesto, NO ejecutado aún:** prueba de rechazo real limitada a `127.0.0.1` en el `/etc/hosts.deny` activo, sin denegar la IP VPN o Wi-Fi del alumno. Mantener `/etc/hosts.allow` actual intacto, recuperar con el respaldo existente si fuera necesario, verificar la regla con `tcpdchk` y `tcpdmatch`, hacer un intento local por IPv4 y comprobar que aparece un nuevo mensaje verdadero en `/var/log/denegados`. Retirar la regla de prueba al terminar, antes de diseñar la política final. Comandos propuestos:
 
@@ -3068,7 +3068,7 @@ ssh -4 -o BatchMode=yes -o ConnectTimeout=5 -o StrictHostKeyChecking=no -o UserK
 tail -n 5 /var/log/denegados
 ```
 
-**Avisos:** el comando `ssh` puede devolver un error esperado por cierre de conexión; solo registrar como éxito si se verifica el evento generado automáticamente en `/var/log/denegados`. La IP `127.0.0.1` es loopback de la propia VM, distinta de la conexión remota VPN `<IP_CLIENTE_VPN>`. Debe seguir abierta la sesión SSH existente. Antes de cambiar las reglas definitivas faltan las IP/rangos permitidos de VPN y Wi-Fi y un método de reversión seguro.
+**Avisos:** el comando `ssh` puede devolver un error esperado por cierre de conexión; solo registrar como éxito si se verifica el evento generado automáticamente en `/var/log/denegados`. La IP `127.0.0.1` es loopback de la propia VM, distinta de la conexión remota VPN `IP_CLIENTE_VPN`. Debe seguir abierta la sesión SSH existente. Antes de cambiar las reglas definitivas faltan las IP/rangos permitidos de VPN y Wi-Fi y un método de reversión seguro.
 
 **Estado:** simulación verificada; apartado l sigue EN CURSO.
 
@@ -3098,13 +3098,13 @@ access:   denied
 ```
 ```bash
 tcpdmatch sshd 127.0.0.1
-tcpdmatch sshd <IP_CLIENTE_VPN>
+tcpdmatch sshd IP_CLIENTE_VPN
 ```
 ```text
 client:   address  127.0.0.1
 server:   process  sshd
 access:   denied
-client:   address  <IP_CLIENTE_VPN>
+client:   address  IP_CLIENTE_VPN
 server:   process  sshd
 access:   granted
 ```
@@ -3156,7 +3156,7 @@ cat /etc/hosts.deny
 - Se confirma la retirada de la regla real temporal que había denegado el intento SSH desde `127.0.0.1`.
 - La regla de registro de rsyslog en `/etc/rsyslog.d/30-lsi-denegados.conf` y el registro histórico `/var/log/denegados` no se han retirado.
 
-**Interpretación:** no queda una política activa de denegación por TCP Wrappers. El rechazo y registro real desde localhost ya fueron demostrados; falta una configuración definitiva que restrinja SSH a los orígenes realmente autorizados, sin impedir el acceso por VPN y Wi-Fi de la UDC. La IP conocida de la sesión VPN era `<IP_CLIENTE_VPN>`, sin garantía de permanencia.
+**Interpretación:** no queda una política activa de denegación por TCP Wrappers. El rechazo y registro real desde localhost ya fueron demostrados; falta una configuración definitiva que restrinja SSH a los orígenes realmente autorizados, sin impedir el acceso por VPN y Wi-Fi de la UDC. La IP conocida de la sesión VPN era `IP_CLIENTE_VPN`, sin garantía de permanencia.
 
 **Próximo paso (propuesto, no ejecutado):** identificar paquetes instalados dependientes de libwrap0 y los servicios actualmente en escucha con `apt-cache rdepends --installed libwrap0` y `ss -tulnp`. La dependencia de paquete es solo un indicio de compatibilidad; no demuestra por sí sola que un determinado servicio que esté ejecutándose utilice TCP Wrappers. Verificar ejecutables individuales con `ldd` o evidencias equivalentes. El binario `/usr/lib/openssh/sshd-session` ya fue confirmado enlazado con `libwrap.so.0`.
 
@@ -3204,7 +3204,7 @@ tcp    LISTEN  0      128    [::]:22             [::]:*          users:(("sshd",
 
 **Diferencia para la defensa:** TCP Wrappers aplica un control de acceso dentro de los servicios compatibles con libwrap, en tanto que un firewall como nftables filtra paquetes en la pila de red sin requerir integración de las aplicaciones.
 
-**Pendiente para cerrar el apartado l:** aplicar una política real de permiso explícito y denegación del resto para un conjunto de IP o redes autorizadas desde VPN y Wi-Fi UDC, comprobar nuevas conexiones permitidas y denegadas y dejar configurado el registro. La IP observada `<IP_CLIENTE_VPN>` es de una conexión VPN, pero no se ha determinado si cambia; aún no se conoce la IP o rango de entrada a la VM desde Wi-Fi UDC. No configurar una denegación general sin prever una reversión segura, dada la dependencia del acceso remoto SSH.
+**Pendiente para cerrar el apartado l:** aplicar una política real de permiso explícito y denegación del resto para un conjunto de IP o redes autorizadas desde VPN y Wi-Fi UDC, comprobar nuevas conexiones permitidas y denegadas y dejar configurado el registro. La IP observada `IP_CLIENTE_VPN` es de una conexión VPN, pero no se ha determinado si cambia; aún no se conoce la IP o rango de entrada a la VM desde Wi-Fi UDC. No configurar una denegación general sin prever una reversión segura, dada la dependencia del acceso remoto SSH.
 
 **Documentación:**
 - Manual de hosts_access: https://manpages.debian.org/trixie/libwrap0/hosts_access.5.en.html
@@ -3215,9 +3215,9 @@ tcp    LISTEN  0      128    [::]:22             [::]:*          users:(("sshd",
 
 ### 10/10/2026 — Ubicación de acceso actual: casa mediante VPN UDC
 
-El alumno confirma que **en este momento se conecta desde casa mediante la VPN de la UDC**. La última IP de origen observada en las conexiones SSH establecidas fue `<IP_CLIENTE_VPN>`; aún no se ha determinado si la VPN la asigna de forma persistente. No conocemos todavía la dirección/rango que verá la VM cuando el alumno utilice el Wi-Fi universitario sin VPN.
+El alumno confirma que **en este momento se conecta desde casa mediante la VPN de la UDC**. La última IP de origen observada en las conexiones SSH establecidas fue `IP_CLIENTE_VPN`; aún no se ha determinado si la VPN la asigna de forma persistente. No conocemos todavía la dirección/rango que verá la VM cuando el alumno utilice el Wi-Fi universitario sin VPN.
 
-**Consecuencia práctica:** no dejar indefinidamente habilitada una política de denegación SSH que autorice solo `<IP_CLIENTE_VPN>`. Puede bloquear nuevas conexiones si cambia la IP VPN o si se conecta desde la universidad. Ya se probó una denegación real, su registro y la reversión de una regla restringida a loopback.
+**Consecuencia práctica:** no dejar indefinidamente habilitada una política de denegación SSH que autorice solo `IP_CLIENTE_VPN`. Puede bloquear nuevas conexiones si cambia la IP VPN o si se conecta desde la universidad. Ya se probó una denegación real, su registro y la reversión de una regla restringida a loopback.
 
 **Siguiente etapa propuesta (no ejecutada):** hacer una prueba temporal de política de denegación general, solo después de actualizar el respaldo seguro y armar/verificar un temporizador transitorio de systemd que restaure `hosts.allow` y `hosts.deny`. Verificar después una conexión SSH **nueva** por VPN, no solo la sesión actual. Retirar la política temporal o dejarla revertir mientras se obtienen las IP/redes autorizadas del campus. No reiniciar ni cerrar la sesión SSH durante la prueba.
 
@@ -3245,7 +3245,7 @@ Sat 2026-10-10 18:49:49 CEST    14min -    - lsi-tcpwrap-rollback.timer   lsi-tc
 
 **Interpretación:** el usuario ha copiado de nuevo los archivos originales de control de acceso al directorio de respaldo y ha programado una tarea transitoria de systemd para restaurarlos a las **18:49:49 CEST del 10/10/2026**, aproximadamente 15 minutos después de crearla. Se ha comprobado su presencia en `list-timers`, pero **no se ha comprobado aún que la restauración haya llegado a ejecutarse**. Si vence antes de aplicar las reglas restrictivas, es imprescindible crear un nuevo temporizador: no se puede asumir que siga activo.
 
-**Siguiente paso propuesto (todavía no ejecutado):** comprobar que el timer continúa activo y dispone de varios minutos, confirmar la dirección de origen de la conexión SSH existente (anteriormente `<IP_CLIENTE_VPN>`), aplicar temporalmente una regla permisiva específica en `hosts.allow` y una regla restrictiva para `sshd` en `hosts.deny`, verificar con `tcpdchk` y `tcpdmatch`, probar apertura de nueva sesión SSH sin cerrar la actual y dejar actuar al mecanismo de recuperación o restablecer archivos de respaldo.
+**Siguiente paso propuesto (todavía no ejecutado):** comprobar que el timer continúa activo y dispone de varios minutos, confirmar la dirección de origen de la conexión SSH existente (anteriormente `IP_CLIENTE_VPN`), aplicar temporalmente una regla permisiva específica en `hosts.allow` y una regla restrictiva para `sshd` en `hosts.deny`, verificar con `tcpdchk` y `tcpdmatch`, probar apertura de nueva sesión SSH sin cerrar la actual y dejar actuar al mecanismo de recuperación o restablecer archivos de respaldo.
 
 **Precaución:** la IP asignada por la VPN UDC puede cambiar; ninguna regla permanente de denegación debe mantenerse hasta identificar las redes autorizadas del campus y de la VPN. No modificar ni reiniciar el servicio SSH en este experimento.
 
@@ -3274,10 +3274,10 @@ Sat 2026-10-10 18:49:49 CEST     5min -                                       - 
 ss -tnp state established | grep ':22'
 ```
 ```text
-0      196      <IP_VM_ENS33>:22       <IP_CLIENTE_VPN>:63418 users:(("sshd-session",pid=1218,fd=7),("sshd-session",pid=1167,fd=7))
+0      196      IP_VM_ENS33:22       IP_CLIENTE_VPN:63418 users:(("sshd-session",pid=1218,fd=7),("sshd-session",pid=1167,fd=7))
 ```
 
-**Conclusión:** el temporizador original estaba activo en ese instante y restaban aproximadamente cinco minutos; la IP del cliente SSH seguía siendo `<IP_CLIENTE_VPN>`. Como el tiempo restante puede haber transcurrido antes de ejecutar nuevas instrucciones, no se puede asumir que ese temporizador siga disponible. No hay evidencia de que las reglas restrictivas generales se hayan aplicado aún.
+**Conclusión:** el temporizador original estaba activo en ese instante y restaban aproximadamente cinco minutos; la IP del cliente SSH seguía siendo `IP_CLIENTE_VPN`. Como el tiempo restante puede haber transcurrido antes de ejecutar nuevas instrucciones, no se puede asumir que ese temporizador siga disponible. No hay evidencia de que las reglas restrictivas generales se hayan aplicado aún.
 
 **Siguiente paso propuesto, NO ejecutado:** rearmar recuperación con una nueva unidad transitoria, por ejemplo `lsi-tcpwrap-rollback-v2.timer`, antes de activar la política; confirmar primero que la nueva unidad está activa, retirar el temporizador antiguo solo después, y continuar la prueba con una nueva conexión SSH desde la VPN sin cerrar la sesión actual. No dejar activa una política que únicamente permita una IP de VPN potencialmente cambiante como configuración definitiva.
 
@@ -3289,7 +3289,7 @@ ss -tnp state established | grep ':22'
 **Comandos ejecutados y salidas proporcionadas por el alumno:**
 ```bash
 tcpdchk -v
-tcpdmatch sshd <IP_CLIENTE_VPN>
+tcpdmatch sshd IP_CLIENTE_VPN
 tcpdmatch sshd 192.0.2.10
 ```
 
@@ -3298,14 +3298,14 @@ Using network configuration file: (null)
 
 >>> Rule /etc/hosts.allow line 11:
 daemons:  sshd
-clients:  <IP_CLIENTE_VPN>
+clients:  IP_CLIENTE_VPN
 access:   granted
 
 >>> Rule /etc/hosts.deny line 18:
 daemons:  sshd
 clients:  ALL
 access:   denied
-client:   address  <IP_CLIENTE_VPN>
+client:   address  IP_CLIENTE_VPN
 server:   process  sshd
 access:   granted
 client:   address  192.0.2.10
@@ -3313,9 +3313,9 @@ server:   process  sshd
 access:   denied
 ```
 
-**Interpretación:** las reglas actualmente visibles en los archivos reales `/etc/hosts.allow` y `/etc/hosts.deny` han superado el análisis sintáctico y la evaluación simulada. La IP VPN observada `<IP_CLIENTE_VPN>` está permitida y la IP documental de prueba `192.0.2.10` se denegaría. Esta validación no equivale a haber comprobado la apertura de una sesión SSH nueva y tampoco acredita por sí sola una conexión realmente rechazada desde `192.0.2.10`. El rechazo real desde loopback `127.0.0.1` ya se verificó en una prueba anterior.
+**Interpretación:** las reglas actualmente visibles en los archivos reales `/etc/hosts.allow` y `/etc/hosts.deny` han superado el análisis sintáctico y la evaluación simulada. La IP VPN observada `IP_CLIENTE_VPN` está permitida y la IP documental de prueba `192.0.2.10` se denegaría. Esta validación no equivale a haber comprobado la apertura de una sesión SSH nueva y tampoco acredita por sí sola una conexión realmente rechazada desde `192.0.2.10`. El rechazo real desde loopback `127.0.0.1` ya se verificó en una prueba anterior.
 
-**Seguridad operacional:** existe o existió un timer de rollback `lsi-tcpwrap-rollback-v2.timer` (su activación no fue confirmada explícitamente por salida del alumno en el último turno). Antes de realizar pruebas reales, verificarlo y asegurarse de que quedan minutos. Mantener la sesión actual abierta. Probar desde una segunda terminal por VPN con `ssh lsi@<IP_VM_ENS33>` y registrar el resultado. Restaurar luego `hosts.allow` y `hosts.deny` desde el respaldo cuando ya no se necesite la política temporal; verificar restauración y desactivar cualquier rollback restante. Evitar dejar permanentemente la regla `sshd: ALL` con solo una IP VPN que pueda cambiar y que no incluya a las direcciones del campus y compañero.
+**Seguridad operacional:** existe o existió un timer de rollback `lsi-tcpwrap-rollback-v2.timer` (su activación no fue confirmada explícitamente por salida del alumno en el último turno). Antes de realizar pruebas reales, verificarlo y asegurarse de que quedan minutos. Mantener la sesión actual abierta. Probar desde una segunda terminal por VPN con `ssh lsi@IP_VM_ENS33` y registrar el resultado. Restaurar luego `hosts.allow` y `hosts.deny` desde el respaldo cuando ya no se necesite la política temporal; verificar restauración y desactivar cualquier rollback restante. Evitar dejar permanentemente la regla `sshd: ALL` con solo una IP VPN que pueda cambiar y que no incluya a las direcciones del campus y compañero.
 
 **Estado:** política real validada por `tcpdchk` y `tcpdmatch`, **pendiente prueba de nueva sesión autorizada y restauración documentada**. Apartado l EN CURSO.
 
@@ -3323,18 +3323,18 @@ access:   denied
 ### 10/10/2026 — Conexión SSH autorizada desde Windows y restauración (confirmado por el alumno)
 
 **Confirmación del alumno (no se aportó captura de la nueva sesión ni salida de los comandos de restauración):**
-- Pudo abrir una **nueva conexión SSH desde CMD de Windows** a la VM, mientras estaban configuradas las reglas reales que autorizaban `<IP_CLIENTE_VPN>` y denegaban el resto.
+- Pudo abrir una **nueva conexión SSH desde CMD de Windows** a la VM, mientras estaban configuradas las reglas reales que autorizaban `IP_CLIENTE_VPN` y denegaban el resto.
 - Después indicó que **restauró todos los archivos de control de acceso a su configuración original**.
 
 **Conclusión y grado de evidencia:**
-- **Comprobado antes con salida:** `tcpdchk -v` sin errores, `tcpdmatch sshd <IP_CLIENTE_VPN>` → `granted` y `tcpdmatch sshd 192.0.2.10` → `denied`. Anteriormente se verificó un rechazo SSH local real desde `127.0.0.1`, generado y registrado automáticamente en `/var/log/denegados`.
+- **Comprobado antes con salida:** `tcpdchk -v` sin errores, `tcpdmatch sshd IP_CLIENTE_VPN` → `granted` y `tcpdmatch sshd 192.0.2.10` → `denied`. Anteriormente se verificó un rechazo SSH local real desde `127.0.0.1`, generado y registrado automáticamente en `/var/log/denegados`.
 - **Confirmado por el alumno:** nueva conexión SSH real autorizada desde Windows y restauración posterior.
 - **No comprobado aún con salida después de la restauración:** ausencia de reglas activas en `/etc/hosts.allow` y `/etc/hosts.deny`, estado final de los temporizadores de reversión y persistencia del archivo `/var/log/denegados`.
 
 **Revisión final sugerida (consultas no destructivas):**
 ```bash
 tcpdchk -v
-tcpdmatch sshd <IP_CLIENTE_VPN>
+tcpdmatch sshd IP_CLIENTE_VPN
 tcpdmatch sshd 192.0.2.10
 systemctl list-timers --all | grep lsi-tcpwrap-rollback
 ```
@@ -3398,20 +3398,20 @@ grep -vE '^[[:space:]]*(#|$)' /etc/hosts.allow /etc/hosts.deny
 
 **Conclusión:** la política temporal restrictiva ha sido retirada y el mecanismo de recuperación v2 ya no está pendiente. Las pruebas de filtrado y auditoría del apartado l están realizadas: vinculación libwrap a `sshd-session`, denegación SSH real desde `127.0.0.1` con registro automático en `/var/log/denegados`, simulaciones de aceptación/rechazo y acceso SSH nuevo desde CMD de Windows autorizado (este último confirmado por el alumno). La configuración independiente de rsyslog para el registro no ha sido retirada según lo observado; no se ha verificado nuevamente su estado en esta última operación.
 
-**Estado del apartado l:** PRUEBAS COMPLETADAS; requisito de mantener una lista de IP autorizadas y denegar las demás **pendiente de configuración definitiva**. Se evitará establecer una regla permanente hasta conocer las redes autorizadas desde VPN de la UDC, Wi-Fi de la universidad y, en su caso, las IP reales desde las que se conectará el compañero. No inventar direcciones ni asumir que `<IP_CLIENTE_VPN>` será fija.
+**Estado del apartado l:** PRUEBAS COMPLETADAS; requisito de mantener una lista de IP autorizadas y denegar las demás **pendiente de configuración definitiva**. Se evitará establecer una regla permanente hasta conocer las redes autorizadas desde VPN de la UDC, Wi-Fi de la universidad y, en su caso, las IP reales desde las que se conectará el compañero. No inventar direcciones ni asumir que `IP_CLIENTE_VPN` será fija.
 
 **Cambios en GitHub:** ninguno. Esta documentación queda lista para integrarse posteriormente en el repositorio.
 
 
 ### 10/10/2026 — Decisión: mantener TCP Wrappers de forma permanente
 
-**Decisión manifestada por el alumno:** quiere dejar **activa de forma permanente** una política de TCP Wrappers que permita la IP desde su VPN (`<IP_CLIENTE_VPN>`) y la IP desde la que se conecta la máquina virtual de su compañero; queda pendiente añadir más adelante la IP observada cuando se conecte desde el Wi-Fi universitario. La frase del alumno repitió «VPN» al final; se interpreta provisionalmente como Wi-Fi por contexto, pendiente de corrección si no fuera así.
+**Decisión manifestada por el alumno:** quiere dejar **activa de forma permanente** una política de TCP Wrappers que permita la IP desde su VPN (`IP_CLIENTE_VPN`) y la IP desde la que se conecta la máquina virtual de su compañero; queda pendiente añadir más adelante la IP observada cuando se conecte desde el Wi-Fi universitario. La frase del alumno repitió «VPN» al final; se interpreta provisionalmente como Wi-Fi por contexto, pendiente de corrección si no fuera así.
 
 **Estado actual probado:** en la última comprobación no había reglas activas ni temporizadores de reversión; se había restaurado la configuración original. Por tanto, **la política permanente aún NO se ha aplicado**.
 
 **Configuración deseada de `/etc/hosts.allow` (esquema, no ejecutar con marcador):**
 ```text
-sshd: <IP_CLIENTE_VPN>
+sshd: IP_CLIENTE_VPN
 sshd: IP_REAL_DE_ORIGEN_DEL_COMPAÑERO
 ```
 
@@ -3427,14 +3427,14 @@ sshd: ALL: spawn /usr/bin/logger -p authpriv.notice -t LSI_TCP_DENEGADO "SSH rec
 
 ### 10/10/2026 — IP de compañero confirmada; reglas definitivas preparadas
 
-**Nuevo dato confirmado por el alumno:** la IP de la máquina virtual de su compañero es `<IP_COMPANERO_LAN>`. Es la dirección que se pretende autorizar en SSH junto con la IP observada del cliente del alumno conectado desde VPN UDC (`<IP_CLIENTE_VPN>`). La IP o rango de acceso desde Wi-Fi UDC sigue sin determinarse. El alumno desea mantener una política restrictiva permanente una vez verificadas nuevas conexiones reales.
+**Nuevo dato confirmado por el alumno:** la IP de la máquina virtual de su compañero es `IP_COMPANERO_LAN`. Es la dirección que se pretende autorizar en SSH junto con la IP observada del cliente del alumno conectado desde VPN UDC (`IP_CLIENTE_VPN`). La IP o rango de acceso desde Wi-Fi UDC sigue sin determinarse. El alumno desea mantener una política restrictiva permanente una vez verificadas nuevas conexiones reales.
 
 **Política elegida, aún NO aplicada en este paso:**
 
 `/etc/hosts.allow` (conservar los comentarios preexistentes):
 ```text
-sshd: <IP_CLIENTE_VPN>
-sshd: <IP_COMPANERO_LAN>
+sshd: IP_CLIENTE_VPN
+sshd: IP_COMPANERO_LAN
 ```
 
 `/etc/hosts.deny` (conservar los comentarios preexistentes):
@@ -3442,13 +3442,13 @@ sshd: <IP_COMPANERO_LAN>
 sshd: ALL: spawn /usr/bin/logger -p authpriv.notice -t LSI_TCP_DENEGADO "SSH rechazado desde %a" : deny
 ```
 
-**Riesgo identificado:** la IP VPN `<IP_CLIENTE_VPN>` puede cambiar. Hasta añadir el rango autorizado de Wi-Fi, nuevas conexiones desde la red del campus quedarían denegadas. No confundir la IP de la VM compañera con la IP desde la que realmente origina una conexión: si se conecta desde su ordenador o VPN, debe determinarse la dirección de origen por `ss`.
+**Riesgo identificado:** la IP VPN `IP_CLIENTE_VPN` puede cambiar. Hasta añadir el rango autorizado de Wi-Fi, nuevas conexiones desde la red del campus quedarían denegadas. No confundir la IP de la VM compañera con la IP desde la que realmente origina una conexión: si se conecta desde su ordenador o VPN, debe determinarse la dirección de origen por `ss`.
 
 **Plan de despliegue seguro para la siguiente intervención (no ejecutado):**
 1. Mantener la sesión SSH actual; confirmar ausencia de reglas y respaldar `/etc/hosts.allow` y `/etc/hosts.deny`.
 2. Armar y verificar temporizador de rollback independiente para restaurar ambos archivos pasado un plazo suficiente.
 3. Añadir las dos reglas de permiso y una regla global de denegación para `sshd` sin añadir comentarios.
-4. Ejecutar `tcpdchk -v`, `tcpdmatch sshd <IP_CLIENTE_VPN>`, `tcpdmatch sshd <IP_COMPANERO_LAN>` y `tcpdmatch sshd 192.0.2.10`.
+4. Ejecutar `tcpdchk -v`, `tcpdmatch sshd IP_CLIENTE_VPN`, `tcpdmatch sshd IP_COMPANERO_LAN` y `tcpdmatch sshd 192.0.2.10`.
 5. Comprobar nueva conexión real desde Windows por VPN; si es posible, desde la VM del compañero. Verificar registro de denegaciones auténticas sin inventar accesos.
 6. Si alguna prueba falla, restaurar el respaldo y dejar actuar la reversión programada. Solo cancelar el temporizador después de verificar la funcionalidad, confirmar la elección de mantener la política y considerar el riesgo de IP VPN dinámica.
 
@@ -3459,12 +3459,12 @@ sshd: ALL: spawn /usr/bin/logger -p authpriv.notice -t LSI_TCP_DENEGADO "SSH rec
 
 ### Apartado l — Incluir también el acceso VPN del compañero
 
-El alumno pregunta si conviene autorizar, además de la IP de la VM del compañero (`<IP_COMPANERO_LAN>`), la IP de su portátil cuando se conecta mediante la VPN de la UDC. **Decisión recomendada:** sí, si el compañero necesita abrir sesiones SSH desde su ordenador por VPN. El servidor ve como origen la IP de esa conexión, distinta de la IP de su VM. Si solamente accediese desde su VM, no haría falta esa entrada adicional.
+El alumno pregunta si conviene autorizar, además de la IP de la VM del compañero (`IP_COMPANERO_LAN`), la IP de su portátil cuando se conecta mediante la VPN de la UDC. **Decisión recomendada:** sí, si el compañero necesita abrir sesiones SSH desde su ordenador por VPN. El servidor ve como origen la IP de esa conexión, distinta de la IP de su VM. Si solamente accediese desde su VM, no haría falta esa entrada adicional.
 
 **Plan para `/etc/hosts.allow` (aún no aplicado):**
 ```text
-sshd: <IP_CLIENTE_VPN>
-sshd: <IP_COMPANERO_LAN>
+sshd: IP_CLIENTE_VPN
+sshd: IP_COMPANERO_LAN
 sshd: IP_VPN_REAL_DEL_COMPAÑERO
 ```
 
@@ -3478,11 +3478,11 @@ sshd: IP_VPN_REAL_DEL_COMPAÑERO
 El alumno solicita expresamente **no realizar más pruebas** y recibir la configuración de TCP Wrappers para mantenerla permanentemente. Se facilitan los siguientes comandos, **propuestos y todavía no confirmados como ejecutados en la máquina**, partiendo de los archivos originales restaurados:
 
 ```bash
-printf '%s\n' 'sshd: <IP_CLIENTE_VPN>, <IP_COMPANERO_LAN>' >> /etc/hosts.allow
+printf '%s\n' 'sshd: IP_CLIENTE_VPN, IP_COMPANERO_LAN' >> /etc/hosts.allow
 printf '%s\n' 'sshd: ALL: spawn /usr/bin/logger -p authpriv.notice -t LSI_TCP_DENEGADO "SSH rechazado desde %a" : deny' >> /etc/hosts.deny
 ```
 
-La política resultante permite nuevas conexiones SSH desde la IP VPN del alumno `<IP_CLIENTE_VPN>` y desde la VM del compañero `<IP_COMPANERO_LAN>`, y rechaza las demás, con registro mediante la etiqueta `LSI_TCP_DENEGADO`. Ya estaba comprobado el encaminamiento de esa etiqueta por rsyslog a `/var/log/denegados`, y un rechazo real desde localhost durante pruebas anteriores.
+La política resultante permite nuevas conexiones SSH desde la IP VPN del alumno `IP_CLIENTE_VPN` y desde la VM del compañero `IP_COMPANERO_LAN`, y rechaza las demás, con registro mediante la etiqueta `LSI_TCP_DENEGADO`. Ya estaba comprobado el encaminamiento de esa etiqueta por rsyslog a `/var/log/denegados`, y un rechazo real desde localhost durante pruebas anteriores.
 
 **Pendientes de añadir a la lista permitida:** IP VPN del compañero e IP (o rango autorizado) desde Wi-Fi UDC del alumno, aún desconocidos; no se inventan. La IP VPN puede variar y el filtrado, si queda permanente, podría impedir futuras reconexiones desde una IP nueva. No es necesario reiniciar SSH ni rsyslog para que se evalúen las reglas en nuevas conexiones.
 
@@ -3494,10 +3494,10 @@ La política resultante permite nuevas conexiones SSH desde la IP VPN del alumno
 El alumno respondió «listo» tras recibir los comandos de configuración permanente de TCP Wrappers, por lo que **se registra como aplicada según confirmación del alumno**, sin nueva captura de los archivos.
 
 **Política comunicada:**
-- `/etc/hosts.allow`: `sshd: <IP_CLIENTE_VPN>, <IP_COMPANERO_LAN>`.
+- `/etc/hosts.allow`: `sshd: IP_CLIENTE_VPN, IP_COMPANERO_LAN`.
 - `/etc/hosts.deny`: `sshd: ALL: spawn /usr/bin/logger -p authpriv.notice -t LSI_TCP_DENEGADO "SSH rechazado desde %a" : deny`.
 - `/etc/rsyslog.d/30-lsi-denegados.conf` y `/var/log/denegados`: previamente comprobados con un rechazo real desde localhost.
 
-**Pendiente:** añadir la IP de VPN del compañero y la IP o el rango autorizado del Wi-Fi universitario cuando se conozcan. Si la VPN del alumno cambia su IP actual `<IP_CLIENTE_VPN>`, podría perder el acceso de nuevas conexiones por VPN. Distinguir la aplicación **confirmada por el alumno** de una comprobación posterior con salidas de `tcpdchk`.
+**Pendiente:** añadir la IP de VPN del compañero y la IP o el rango autorizado del Wi-Fi universitario cuando se conozcan. Si la VPN del alumno cambia su IP actual `IP_CLIENTE_VPN`, podría perder el acceso de nuevas conexiones por VPN. Distinguir la aplicación **confirmada por el alumno** de una comprobación posterior con salidas de `tcpdchk`.
 
 **GitHub:** no modificado.
